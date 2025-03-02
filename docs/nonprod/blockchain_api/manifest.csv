@@ -2,3 +2,4 @@ date,focus,case_file,note_file
 2025-02-26,"API repository/models/migrations and query fixes",tests/nonprod/blockchain_api/cases/2025-02-26.json,docs/nonprod/blockchain_api/daily/2025-02-26.md
 2025-02-27,"API consumers/queues/events integration",tests/nonprod/blockchain_api/cases/2025-02-27.json,docs/nonprod/blockchain_api/daily/2025-02-27.md
 2025-03-01,"API refactor/performance/security hardening",tests/nonprod/blockchain_api/cases/2025-03-01.json,docs/nonprod/blockchain_api/daily/2025-03-01.md
+2025-03-02,"API docs/config/chore and release notes",tests/nonprod/blockchain_api/cases/2025-03-02.json,docs/nonprod/blockchain_api/daily/2025-03-02.md
