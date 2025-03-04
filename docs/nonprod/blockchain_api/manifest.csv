@@ -4,3 +4,4 @@ date,focus,case_file,note_file
 2025-03-01,"API refactor/performance/security hardening",tests/nonprod/blockchain_api/cases/2025-03-01.json,docs/nonprod/blockchain_api/daily/2025-03-01.md
 2025-03-02,"API docs/config/chore and release notes",tests/nonprod/blockchain_api/cases/2025-03-02.json,docs/nonprod/blockchain_api/daily/2025-03-02.md
 2025-03-03,"API controllers/routes for current flow",tests/nonprod/blockchain_api/cases/2025-03-03.json,docs/nonprod/blockchain_api/daily/2025-03-03.md
+2025-03-04,"API services + middleware validation/auth",tests/nonprod/blockchain_api/cases/2025-03-04.json,docs/nonprod/blockchain_api/daily/2025-03-04.md
