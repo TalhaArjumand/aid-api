@@ -1,0 +1,12 @@
+{
+  "date": "2025-03-07",
+  "pair": "blockchain+api",
+  "focus": "API tests (unit/integration) + bug fixes",
+  "repo": "aid-api",
+  "objective": "Non-production validation fixture for api tests (unit/integration) + bug fixes",
+  "checklist": [
+    "confirm non-production scripts execute",
+    "confirm fixture schema stays stable",
+    "confirm no runtime source files are modified"
+  ]
+}
