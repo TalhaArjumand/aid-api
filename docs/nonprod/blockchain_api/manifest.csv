@@ -21,3 +21,4 @@ date,focus,case_file,note_file
 2025-03-18,"API services + middleware validation/auth",tests/nonprod/blockchain_api/cases/2025-03-18.json,docs/nonprod/blockchain_api/daily/2025-03-18.md
 2025-03-19,"API repository/models/migrations and query fixes",tests/nonprod/blockchain_api/cases/2025-03-19.json,docs/nonprod/blockchain_api/daily/2025-03-19.md
 2025-03-20,"API consumers/queues/events integration",tests/nonprod/blockchain_api/cases/2025-03-20.json,docs/nonprod/blockchain_api/daily/2025-03-20.md
+2025-03-21,"API tests (unit/integration) + bug fixes",tests/nonprod/blockchain_api/cases/2025-03-21.json,docs/nonprod/blockchain_api/daily/2025-03-21.md
