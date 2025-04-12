@@ -1,0 +1,12 @@
+{
+  "date": "2025-04-12",
+  "pair": "blockchain+api",
+  "focus": "API refactor/performance/security hardening",
+  "repo": "aid-api",
+  "objective": "Non-production validation fixture for api refactor/performance/security hardening",
+  "checklist": [
+    "confirm non-production scripts execute",
+    "confirm fixture schema stays stable",
+    "confirm no runtime source files are modified"
+  ]
+}
