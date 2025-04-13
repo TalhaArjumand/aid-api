@@ -1,0 +1,12 @@
+{
+  "date": "2025-04-13",
+  "pair": "blockchain+api",
+  "focus": "API docs/config/chore and release notes",
+  "repo": "aid-api",
+  "objective": "Non-production validation fixture for api docs/config/chore and release notes",
+  "checklist": [
+    "confirm non-production scripts execute",
+    "confirm fixture schema stays stable",
+    "confirm no runtime source files are modified"
+  ]
+}
