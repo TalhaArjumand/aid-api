@@ -47,3 +47,4 @@ date,focus,case_file,note_file
 2025-04-13,"API docs/config/chore and release notes",tests/nonprod/blockchain_api/cases/2025-04-13.json,docs/nonprod/blockchain_api/daily/2025-04-13.md
 2025-04-14,"API controllers/routes for current flow",tests/nonprod/blockchain_api/cases/2025-04-14.json,docs/nonprod/blockchain_api/daily/2025-04-14.md
 2025-04-15,"API services + middleware validation/auth",tests/nonprod/blockchain_api/cases/2025-04-15.json,docs/nonprod/blockchain_api/daily/2025-04-15.md
+2025-04-16,"API repository/models/migrations and query fixes",tests/nonprod/blockchain_api/cases/2025-04-16.json,docs/nonprod/blockchain_api/daily/2025-04-16.md
