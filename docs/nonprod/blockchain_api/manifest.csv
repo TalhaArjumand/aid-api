@@ -50,3 +50,4 @@ date,focus,case_file,note_file
 2025-04-16,"API repository/models/migrations and query fixes",tests/nonprod/blockchain_api/cases/2025-04-16.json,docs/nonprod/blockchain_api/daily/2025-04-16.md
 2025-04-17,"API consumers/queues/events integration",tests/nonprod/blockchain_api/cases/2025-04-17.json,docs/nonprod/blockchain_api/daily/2025-04-17.md
 2025-04-18,"API tests (unit/integration) + bug fixes",tests/nonprod/blockchain_api/cases/2025-04-18.json,docs/nonprod/blockchain_api/daily/2025-04-18.md
+2025-04-19,"API refactor/performance/security hardening",tests/nonprod/blockchain_api/cases/2025-04-19.json,docs/nonprod/blockchain_api/daily/2025-04-19.md
