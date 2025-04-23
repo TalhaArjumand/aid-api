@@ -1,0 +1,12 @@
+{
+  "date": "2025-04-23",
+  "pair": "blockchain+api",
+  "focus": "API repository/models/migrations and query fixes",
+  "repo": "aid-api",
+  "objective": "Non-production validation fixture for api repository/models/migrations and query fixes",
+  "checklist": [
+    "confirm non-production scripts execute",
+    "confirm fixture schema stays stable",
+    "confirm no runtime source files are modified"
+  ]
+}
