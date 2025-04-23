@@ -13,9 +13,17 @@ const AwsUploadService = require('./AwsUploadService');
 const {Message} = require('@droidsolutions-oss/amqp-ts');
 const QueueService = require('./QueueService');
 
-const provider = new ethers.providers.getDefaultProvider(
-  process.env.BLOCKCHAINSERV
+
+const provider = new ethers.providers.StaticJsonRpcProvider(
+  { url: process.env.BLOCKCHAINSERV || "http://127.0.0.1:8545" },
+  { name: "besu-local", chainId: 1337 }
 );
+
+// Optional log to confirm config
+console.log("🧠 Provider connected to:", provider.connection.url);
+
+
+
 const Interface = new ethers.utils.Interface([
   'event initializeContract(uint256 indexed contractIndex,address indexed contractAddress, string indexed _name)'
 ]);

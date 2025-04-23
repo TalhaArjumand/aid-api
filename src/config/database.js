@@ -20,18 +20,21 @@ module.exports = {
     host: config.DB_HOST,
     logging: false,
     dialect: 'postgres',
+    // dialectOptions: {
+    //   ssl: {
+    //     require: false,
+    //     rejectUnauthorized: false
+    //     // ca: [rdsCert],
+    //     // checkServerIdentity: (host, cert) => {
+    //     //   const error = tls.checkServerIdentity(host, cert);
+    //     //   if (error && !cert.subject.CN.endsWith('.rds.amazonaws.com')) {
+    //     //     return error;
+    //     //   }
+    //     // }
+    //   }
+    // }
     dialectOptions: {
-      ssl: {
-        require: false,
-        rejectUnauthorized: false
-        // ca: [rdsCert],
-        // checkServerIdentity: (host, cert) => {
-        //   const error = tls.checkServerIdentity(host, cert);
-        //   if (error && !cert.subject.CN.endsWith('.rds.amazonaws.com')) {
-        //     return error;
-        //   }
-        // }
-      }
+      ssl: false
     }
   },
   test: {

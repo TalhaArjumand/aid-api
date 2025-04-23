@@ -21,7 +21,8 @@ module.exports = (sequelize, DataTypes) => {
       });
 
       Organisation.hasMany(models.OrganisationMembers, {
-        as: 'Members'
+        as: 'Members',
+        foreignKey: 'OrganisationId' // ✅ Add this
       });
       Organisation.hasMany(models.Transaction, {
         as: 'Transactions',

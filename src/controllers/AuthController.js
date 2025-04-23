@@ -1076,24 +1076,25 @@ class AuthController {
 
   static async signIn(req, res) {
     try {
-      const user = await User.findOne({
-        where: {
-          email: req.body.email
-        },
+      console.log("📥 Login payload:", req.body);
+  
+      const user = await db.User.findOne({
+        where: { email: req.body.email },
         include: {
           model: db.OrganisationMembers,
           as: 'AssociatedOrganisations',
-          include: {
-            model: db.Organisation,
-            as: 'Organisation'
-          }
+          attributes: ['OrganisationId'] // just get org IDs
         }
       });
+  
+      console.log("🔍 Found user:", user ? user.email : "No user found");
+  
       const data = await AuthService.login(user, req.body.password.trim());
+  
       Response.setSuccess(200, 'Login Successful.', data);
       return Response.send(res);
     } catch (error) {
-      Logger.info(`Internal Server Error: ${error}`);
+      console.error("❌ Login Error:", error);
       const message =
         error.status == 401 ? error.message : 'Internal Server Error';
       Response.setError(401, message);

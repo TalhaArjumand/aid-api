@@ -81,7 +81,8 @@ module.exports = (sequelize, DataTypes) => {
         }
       });
       User.hasMany(models.OrganisationMembers, {
-        as: 'AssociatedOrganisations'
+        as: 'AssociatedOrganisations',
+        foreignKey: 'UserId' // ✅ this is required for Sequelize to populate correctly
       });
       User.belongsToMany(models.Organisation, {
         as: 'Organisations',

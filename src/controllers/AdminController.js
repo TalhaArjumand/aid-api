@@ -519,29 +519,41 @@ class AdminController {
   static async getAllCampaigns(req, res) {
     try {
       const query = SanitizeObject(req.query, ['type']);
-      const allCampaign = await CampaignService.getAllCampaigns({
-        ...query
-      });
-
-      for (let campaign of allCampaign) {
-        campaign.dataValues.total_amount = campaign.budget;
-        campaign.dataValues.total_amount_spent = campaign.amount_disbursed;
+      const allCampaign = await CampaignService.getAllCampaigns({ ...query });
+  
+      // Ensure it's an array before proceeding
+      if (Array.isArray(allCampaign)) {
+        for (let campaign of allCampaign) {
+          if (campaign?.dataValues) {
+            campaign.dataValues.total_amount = campaign.budget || 0;
+            campaign.dataValues.total_amount_spent = campaign.amount_disbursed || 0;
+          }
+        }
+  
+        Response.setSuccess(
+          HttpStatusCode.STATUS_OK,
+          'Campaign retrieved',
+          allCampaign
+        );
+      } else {
+        Response.setSuccess(
+          HttpStatusCode.STATUS_OK,
+          'No campaigns found',
+          []
+        );
       }
-      Response.setSuccess(
-        HttpStatusCode.STATUS_OK,
-        'Campaign retrieved',
-        allCampaign
-      );
+  
       return Response.send(res);
     } catch (error) {
+      console.error("🔥 getAllCampaigns error:", error);
       Response.setError(
         HttpStatusCode.STATUS_INTERNAL_SERVER_ERROR,
-        'Internal error occured. Please try again.' + error
+        'Internal error occurred. Please try again.'
       );
+      console.log("✅ allCampaign result:", allCampaign);
       return Response.send(res);
     }
   }
-
   static async getAllDonors(req, res) {
     try {
       const allDonors = await OrganisationService.getAllDonorsAdmin();

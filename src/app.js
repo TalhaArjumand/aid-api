@@ -3,11 +3,11 @@ const express = require('express');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const cors = require('cors');
-const {Logger} = require('./libs');
+const { Logger } = require('./libs');
+const { Response } = require('./libs');
+const { HttpStatusCode } = require('./utils');
 
-const {Response} = require('./libs');
-const {HttpStatusCode} = require('./utils');
-//Routers link
+// Routers link
 const adminRoute = require('./routers/admin');
 const usersRoute = require('./routers/users');
 const transactionRouter = require('./routers/transaction');
@@ -35,12 +35,12 @@ const paymentRouter = require('./routers/payment');
 
 const app = express();
 
-app.use(cors({origin: '*'}));
+// Middleware
+app.use(cors({ origin: '*' }));
 app.use(helmet());
 app.use(morgan('combined'));
 app.use(express.json());
-app.use(express.urlencoded({extended: true}));
-// const adminRouter = require("./routers/admin");
+app.use(express.urlencoded({ extended: true }));
 
 // Routing endpoint
 app.use('/v1/admin', adminRoute);
@@ -69,32 +69,32 @@ app.use('/v1/payment', paymentRouter);
 app.use('/v1/subscriptions', subscriptionRouter);
 app.use('/v1/impact-reports', impactReportRouter);
 
+// ✅ Debugging: Log all registered routes at startup
+app._router.stack
+  .filter((r) => r.route) // Filter out middleware
+  .map((r) => Logger.info(`✔ Route registered: ${r.route.path}`));
+
 app.get('/', (req, res) => {
   try {
-    Response.setSuccess(HttpStatusCode.STATUS_OK, 'Welcome to CHATS App ');
+    Response.setSuccess(HttpStatusCode.STATUS_OK, 'Welcome to CHATS App');
     return Response.send(res);
   } catch (error) {
     const message =
-      process.env.NODE_ENV === 'production'
-        ? 'Internal Server Error.'
-        : error.toString();
+      process.env.NODE_ENV === 'production' ? 'Internal Server Error.' : error.toString();
     Response.setError(HttpStatusCode.STATUS_INTERNAL_SERVER_ERROR, message);
     return Response.send(res);
   }
 });
+
+// Handle unknown routes
 app.all('*', (req, res) => {
   try {
-    Logger.info('trying to get an unknown route');
-    Response.setError(
-      HttpStatusCode.STATUS_RESOURCE_NOT_FOUND,
-      'Requested resource not found.'
-    );
+    Logger.info(`❌ 404 Not Found: ${req.method} ${req.originalUrl}`);
+    Response.setError(HttpStatusCode.STATUS_RESOURCE_NOT_FOUND, 'Requested resource not found.');
     return Response.send(res);
   } catch (error) {
     const message =
-      process.env.NODE_ENV === 'production'
-        ? 'Internal Server Error.'
-        : error.toString();
+      process.env.NODE_ENV === 'production' ? 'Internal Server Error.' : error.toString();
     Logger.error(message);
     Response.setError(HttpStatusCode.STATUS_INTERNAL_SERVER_ERROR, message);
     return Response.send(res);
