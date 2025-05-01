@@ -1,0 +1,2 @@
+date,focus,case_file,note_file
+2025-05-01,"API consumers/queues/events integration",tests/nonprod/ngo_api/cases/2025-05-01.json,docs/nonprod/ngo_api/daily/2025-05-01.md
