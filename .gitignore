@@ -110,3 +110,6 @@ dist
 
 # Upload temp folder
 temp
+
+# FVM Version Cache
+.fvm/

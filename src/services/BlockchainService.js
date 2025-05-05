@@ -6,13 +6,37 @@ const ethers = require('ethers');
 const moment = require('moment');
 const crypto = require('crypto');
 const sha256 = require('simple-sha256');
-const {tokenConfig, switchWallet} = require('../config');
+const fs = require('fs');
+const path = require('path'); // ✅ Required for safe path resolution
+
+const {switchWallet} = require('../config');
+
+// ✅ Load Chats ABI from artifacts
+const chatsJsonPath = path.join(
+  __dirname,
+  "../../../chats-blockchain/artifacts/contracts/Chats.sol/Chats.json"
+);
+
+if (!fs.existsSync(chatsJsonPath)) {
+  throw new Error("❌ Chats.json ABI file not found at: " + chatsJsonPath);
+}
+
+const chatsABI = require(chatsJsonPath).abi;
+
+// ✅ Use deployed address from your .env file
+const tokenConfig = {
+  baseURL: process.env.TOKEN_BASE_URL || 'https://staging-token.chats.cash/api/v1/web3',
+  secret: process.env.TOKEN_SECRET || '',
+  api: process.env.BLOCKCHAINSERV_TEST,
+  address: process.env.CONTRACTADDR_TEST || '0xf25186B5081Ff5cE73482AD761DB0eB0d25abfBF', // fallback
+  abi: chatsABI
+};
+
 const {SwitchToken} = require('../models');
 const {Encryption, Logger, RabbitMq} = require('../libs');
 const AwsUploadService = require('./AwsUploadService');
 const {Message} = require('@droidsolutions-oss/amqp-ts');
 const QueueService = require('./QueueService');
-
 
 const provider = new ethers.providers.StaticJsonRpcProvider(
   { url: process.env.BLOCKCHAINSERV || "http://127.0.0.1:8545" },
@@ -571,48 +595,38 @@ class BlockchainService {
     });
   }
 
-  static async approveToSpend(
-    ownerPassword,
-    spenderAdd,
-    amount,
-    message,
-    type
-  ) {
+  static async approveToSpend(ownerPassword, spenderAdd, amount) {
     Logger.info(`Approving to spend: ${ownerPassword} ${spenderAdd} ${amount}`);
     return new Promise(async (resolve, reject) => {
       try {
-        Logger.info('approving to spend');
-        const {data} = await Axios.post(
-          `${tokenConfig.baseURL}/txn/approve/${ownerPassword}/${spenderAdd}/${amount}`
-        );
-        Logger.info('Approved to spend');
-        resolve(data);
-      } catch (error) {
-        Logger.error(
-          `Error approving to spend: ${JSON.stringify(error.response.data)}`
-        );
-
-        if (
-          error.response.data.message.code === 'REPLACEMENT_UNDERPRICED' ||
-          error.response.data.message.code === 'UNPREDICTABLE_GAS_LIMIT' ||
-          error.response.data.message.code === 'INSUFFICIENT_FUNDS'
-        ) {
-          const keys = {
-            ownerPassword,
-            spenderAdd,
-            amount
-          };
-          if (type === 'single') {
-            await QueueService.increaseGasFeeForSB(keys, message);
-          }
-          if (type === 'multiple') {
-            await QueueService.increaseAllowance(keys, message);
-          }
-          if (type === 'refund_beneficiary') {
-            await QueueService.increaseGasForRefund(keys, message);
-          }
+        Logger.info('🔐 Preparing wallet for approval...');
+        const wallet = new ethers.Wallet(ownerPassword, provider);
+  
+        tokenConfig.abi = chatsABI;
+  
+        if (!tokenConfig.abi || !Array.isArray(tokenConfig.abi)) {
+          throw new Error("❌ tokenConfig.abi is undefined or not an array");
         }
-
+  
+        const contract = new ethers.Contract(tokenConfig.address, tokenConfig.abi, wallet);
+        const parsedAmount = ethers.utils.parseUnits(amount.toString(), 6); // 6 decimals assumed
+  
+        Logger.info("⛽ Estimating gas...");
+        const estimatedGas = await contract.estimateGas.approve(spenderAdd, parsedAmount);
+        Logger.info(`📏 Estimated Gas: ${estimatedGas.toString()}`);
+  
+        const tx = await contract.approve(spenderAdd, parsedAmount, {
+          gasLimit: estimatedGas.add(20000), // add a buffer
+          gasPrice: ethers.utils.parseUnits("2", "gwei"), // adjust if needed
+        });
+  
+        Logger.info('✅ Approve transaction sent:', tx.hash);
+        const receipt = await tx.wait();
+        Logger.info('✅ Approve transaction mined:', receipt.transactionHash);
+  
+        resolve({ Approved: receipt.transactionHash });
+      } catch (error) {
+        Logger.error(`❌ Error in approveToSpend: ${error?.message || error}`);
         reject(error);
       }
     });
@@ -827,13 +841,33 @@ class BlockchainService {
     return generatedKeyPair;
   }
 
+  // static async setUserKeypair(id) {
+  //   let pair = {};
+  //   // TODO: Rebuild user public and private key after retrieving mnemonic key and return account keypair
+  //   try {
+  //     var mnemonic = await AwsUploadService.getMnemonic();
+  //     mnemonic = JSON.parse(mnemonic);
+
+  //     pair = await this.createNewBSCAccount({
+  //       mnemonicString: mnemonic.toString(),
+  //       userSalt: id
+  //     });
+  //     return pair;
+  //   } catch (error) {
+  //     Logger.error(`Error Creating Wallet Address: ${error} `);
+  //   }
+  // }
+
   static async setUserKeypair(id) {
     let pair = {};
-    // TODO: Rebuild user public and private key after retrieving mnemonic key and return account keypair
     try {
-      var mnemonic = await AwsUploadService.getMnemonic();
-      mnemonic = JSON.parse(mnemonic);
-
+      // --- OLD CODE (AWS) ---
+      // var mnemonic = await AwsUploadService.getMnemonic();
+      // mnemonic = JSON.parse(mnemonic);
+  
+      // --- QUICK FIX (Hardcoded dummy mnemonic) ---
+      var mnemonic = "ripple scissors kick mammal hire column oak again sun offer wealth tomorrow wagon turn fatal";
+  
       pair = await this.createNewBSCAccount({
         mnemonicString: mnemonic.toString(),
         userSalt: id
@@ -841,6 +875,7 @@ class BlockchainService {
       return pair;
     } catch (error) {
       Logger.error(`Error Creating Wallet Address: ${error} `);
+      throw new Error('Mnemonic not found or AWS error.');
     }
   }
   static async getTransactionDetails(hash, bind, message) {

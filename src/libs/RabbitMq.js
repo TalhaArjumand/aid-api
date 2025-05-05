@@ -1,9 +1,10 @@
-exports.__esModule = true;
-const {connectionURL} = require('../config').rabbitmqConfig;
-const {Connection} = require('@droidsolutions-oss/amqp-ts');
+require('dotenv').config();
+const { Connection } = require('@droidsolutions-oss/amqp-ts');
 
-exports.default = new Connection(
-  connectionURL,
+console.log(`🐰 Connecting to RabbitMQ URL: ${process.env.AMQP_URL}`);
+
+module.exports = new Connection(
+  process.env.AMQP_URL,
   {},
-  {interval: 3000, retries: 3000}
+  { interval: 3000, retries: 3000 }
 );

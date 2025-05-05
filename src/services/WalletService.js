@@ -24,6 +24,11 @@ class WalletService {
   }
 
   static async updateOrCreate({wallet_type, CampaignId, ownerId}, data) {
+    Logger.info('🛠️ WalletService.updateOrCreate received:', {
+      wallet_type,
+      CampaignId,
+      ownerId
+    });
     return new Promise(async (resolve, reject) => {
       try {
         const where = {

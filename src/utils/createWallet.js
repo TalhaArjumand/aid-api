@@ -1,13 +1,25 @@
-const {RabbitMq, Logger} = require('../libs');
-const {CREATE_WALLET} = require('../constants/queues.constant');
-const {Message} = require('@droidsolutions-oss/amqp-ts');
+const RabbitMq = require('../libs/RabbitMQ/Connection');
+const { Logger } = require('../libs');
+const { CREATE_WALLET } = require('../constants/queues.constant');
+const { Message } = require('@droidsolutions-oss/amqp-ts');
 
-const createWalletQueue = RabbitMq['default'].declareQueue(CREATE_WALLET, {
-  durable: true
-});
+let createWalletQueue = null; // Declare it outside
+
+async function initQueue() {
+  if (!createWalletQueue) {
+    createWalletQueue = RabbitMq.declareQueue(CREATE_WALLET, { durable: true });
+    await createWalletQueue.initialized; // Important to await!
+    Logger.info('✅ Wallet queue initialized!');
+  }
+}
+
 async function createWallet(ownerId, wallet_type, CampaignId = null) {
-  const payload = {wallet_type, ownerId, CampaignId};
+  await initQueue(); // Ensure queue is declared and initialized
+
+  const payload = { wallet_type, ownerId, CampaignId };
   Logger.info('wallet payload received');
+
+  await RabbitMq.completeConfiguration(); // Flush config
   createWalletQueue.send(
     new Message(payload, {
       contentType: 'application/json'

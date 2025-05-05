@@ -33,14 +33,15 @@ const {
   HashiCorp
 } = require('../utils');
 
-const amqp_1 = require('../libs/RabbitMQ/Connection');
 const {async} = require('regenerator-runtime');
 const Pagination = require('../utils/pagination');
 const {generateOTP} = require('../libs/Utils');
-const approveToSpendQueue = amqp_1['default'].declareQueue('approveToSpend', {
+
+const RabbitMq = require('../libs/RabbitMQ/Connection');
+const approveToSpendQueue = RabbitMq.declareQueue('approveToSpend', {
   durable: true
 });
-const createWalletQueue = amqp_1['default'].declareQueue('createWallet', {
+const createWalletQueue = RabbitMq.declareQueue('createWallet', {
   durable: true
 });
 

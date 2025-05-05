@@ -18,7 +18,9 @@ const uploadFile = require('./AmazonController');
 const readXlsxFile = require('read-excel-file/node');
 const axios = require('axios');
 const AuthService = require('../services/AuthService');
-const amqp_1 = require('./../libs/RabbitMQ/Connection');
+const RabbitMq = require('../libs/RabbitMQ/Connection');   // <-- fixed
+console.log('RabbitMq prototype:', Object.getOwnPropertyNames(Object.getPrototypeOf(RabbitMq)));
+
 const {
   UserService,
   QueueService,
@@ -30,17 +32,17 @@ const {
   ProductService,
   CurrencyServices
 } = require('../services');
+
 const BeneficiariesService = require('../services/BeneficiaryService');
 const {async} = require('regenerator-runtime');
-const ninVerificationQueue = amqp_1['default'].declareQueue(
-  'nin_verification',
-  {
-    durable: true
-  }
-);
-const createWalletQueue = amqp_1['default'].declareQueue('createWallet', {
+
+const ninVerificationQueue = RabbitMq.declareQueue('nin_verification', {
   durable: true
 });
+const createWalletQueue = RabbitMq.declareQueue('createWallet', {
+  durable: true
+});
+
 const __basedir = path.join(__dirname, '..');
 
 const environ = process.env.NODE_ENV == 'development' ? 'd' : 'p';

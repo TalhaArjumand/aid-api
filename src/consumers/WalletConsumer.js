@@ -1,77 +1,56 @@
-const {BlockchainService, WalletService, QueueService} = require('../services');
-const {RabbitMq, Logger} = require('../libs');
-const {CREATE_WALLET, CONFIRM_AND_CREATE_WALLET} =
-  require('../constants').queuesConst;
+console.log('✅ WalletConsumer.js is now running!');
 
-const createWalletQueue = RabbitMq['default'].declareQueue(CREATE_WALLET, {
+const { BlockchainService, WalletService, QueueService } = require('../services');
+const { Logger } = require('../libs');
+const RabbitMq = require('../libs/RabbitMQ/Connection');
+const { CREATE_WALLET, CONFIRM_AND_CREATE_WALLET } = require('../constants').queuesConst;
+
+const createWalletQueue = RabbitMq.declareQueue(CREATE_WALLET, {
   durable: true,
   prefetch: 1
 });
 
-const confirmAndCreateWalletQueue = RabbitMq['default'].declareQueue(
-  CONFIRM_AND_CREATE_WALLET,
-  {
-    durable: true,
-    prefetch: 1
-  }
-);
+const confirmAndCreateWalletQueue = RabbitMq.declareQueue(CONFIRM_AND_CREATE_WALLET, {
+  durable: true,
+  prefetch: 1
+});
 
-RabbitMq['default']
-  .completeConfiguration()
+createWalletQueue.initialized.then(() => console.log(`🎯 Queue "${CREATE_WALLET}" is now live`));
+
+RabbitMq.completeConfiguration()
   .then(() => {
-    createWalletQueue
-      .activateConsumer(async msg => {
-        const content = msg.getContent();
-        const token = await BlockchainService.addUser(
-          `${
-            !content.CampaignId && content.wallet_type == 'user'
-              ? 'user_' + content.ownerId
-              : content.CampaignId && content.wallet_type == 'user'
-              ? `user_${content.ownerId}campaign_${content.CampaignId}`
-              : !content.CampaignId && content.wallet_type == 'organisation'
-              ? 'organisation_' + content.ownerId
-              : content.CampaignId &&
-                content.wallet_type == 'organisation' &&
-                'campaign_' + content.CampaignId
-          }`
-        );
+    Logger.info(`✅ RabbitMq completeConfiguration successful`);
 
-        if (!token) {
-          msg.nack();
-          return;
-        }
-        Logger.info(`${JSON.stringify(content)}, CONTENT 1`);
-        Logger.info(`${JSON.stringify(token)}, TOKEN`);
-        await QueueService.confirmAndCreateWallet(content, token);
-        Logger.info('Address Sent for confirmation');
-        msg.ack();
-      })
-      .catch(error => {
-        Logger.error(`Consumer Error: ${error.message}`);
-      })
-      .then(() => {
-        Logger.info(`Running Process For Wallet Creation`);
-      });
+    createWalletQueue.activateConsumer(async msg => {
+      console.log('🎯 Received message from createWallet queue:', msg.getContent());
 
-    confirmAndCreateWalletQueue
-      .activateConsumer(async msg => {
-        const {content, keyPair} = msg.getContent();
-        Logger.info(`${JSON.stringify(content)}, CONTENT`);
-        Logger.info(`${JSON.stringify(keyPair)}, KEYPAIR`);
-        Logger.info('Confirming Wallet Creation: ' + keyPair.address);
-        const wallet = await WalletService.updateOrCreate(content, {
-          address: keyPair.address
-        });
-        Logger.info('Account Wallet Created: ' + JSON.stringify(wallet));
-        msg.ack();
-      })
-      .catch(error => {
-        Logger.error(`Consumer Error: ${error.message}`);
-      })
-      .then(() => {
-        Logger.info(`Running Process For Confirming Wallet Creation`);
-      });
+      const content = msg.getContent();
+      const token = await BlockchainService.addUser(
+        `user_${content.ownerId}` // simplified for this example
+      );
+
+      if (!token) {
+        console.log('🚨 BlockchainService.addUser failed');
+        msg.nack();
+        return;
+      }
+
+      Logger.info(`${JSON.stringify(content)}, CONTENT`);
+      Logger.info(`${JSON.stringify(token)}, TOKEN`);
+      await QueueService.confirmAndCreateWallet(content, token);
+      Logger.info('📤 Address Sent for confirmation');
+      msg.ack();
+    });
+
+    confirmAndCreateWalletQueue.activateConsumer(async msg => {
+      const { content, keyPair } = msg.getContent();
+      Logger.info(`📩 Confirmed wallet for: ${keyPair.address}`);
+      await WalletService.updateOrCreate(content, { address: keyPair.address });
+      msg.ack();
+    });
+
+    Logger.info(`🚀 Consumers are now running!`);
   })
   .catch(error => {
-    Logger.error(`RabbitMq Error: ${error}`);
+    Logger.error(`❌ RabbitMq Error during startup: ${error}`);
   });

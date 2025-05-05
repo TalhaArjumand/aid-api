@@ -32,18 +32,18 @@ const {
 const {Response, Logger} = require('../libs');
 
 const {Message} = require('@droidsolutions-oss/amqp-ts');
-var amqp_1 = require('./../libs/RabbitMQ/Connection');
 const codeGenerator = require('./QrCodeController');
 const ZohoService = require('../services/ZohoService');
 const sanitizeObject = require('../utils/sanitizeObject');
 const AwsUploadService = require('../services/AwsUploadService');
 const {data} = require('../libs/Response');
 
-var transferToQueue = amqp_1['default'].declareQueue('transferTo', {
+const RabbitMq = require('../libs/RabbitMQ/Connection');
+
+var transferToQueue = RabbitMq.declareQueue('transferTo', {
   durable: true
 });
-
-var transferFromQueue = amqp_1['default'].declareQueue('transferFrom', {
+var transferFromQueue = RabbitMq.declareQueue('transferFrom', {
   durable: true
 });
 

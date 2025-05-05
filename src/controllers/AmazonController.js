@@ -9,6 +9,14 @@ const s3 = new AWS.S3({
 
 async function uploadFile(fileName, fileKey, bucket) {
   console.log(fileName.type, 'type');
+
+  // 🔥 Bypass S3 Upload During Local Development
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🛑 Skipping AWS S3 upload... Returning dummy URL.');
+    return Promise.resolve(`https://dummy-image-service.local/${fileKey}`);
+  }
+
+  // 🔥 Actual S3 upload (only in production)
   return new Promise(async function (resolve, reject) {
     const params = {
       Bucket: bucket,

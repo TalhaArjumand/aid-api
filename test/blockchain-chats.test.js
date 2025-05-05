@@ -372,6 +372,156 @@ async function testSnapshotBalances() {
     }
 }
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                       //
+//                                          live test                                                                    //
+//                                                                                                                       //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+async function testMintToBeneficiary() {
+  try {
+    const recipientAddress = "0xC13A147480B7Dc73764C23Ba74C0F64a5fDc77a1"; // beneficiary wallet
+    const mintAmount = 500 * (10 ** 6); // Minting 500 CHATS with 6 decimals
+
+    const provider = new ethers.providers.JsonRpcProvider(process.env.RPC_URL);
+
+    const adminWallet = new ethers.Wallet(
+      process.env.ADMIN_PASS_TEST || process.env.ADMIN_PASS,
+      provider
+    );
+
+    const chatsContract = getTokenContract.connect(adminWallet);
+
+    const tx = await chatsContract.mint(mintAmount, recipientAddress);
+    await tx.wait();
+
+    console.log(`✅ Minted ${mintAmount / 1e6} CHATS to ${recipientAddress}`);
+  } catch (err) {
+    console.error("❌ Minting failed:", err.message);
+  }
+}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                       //
+//                                         Verify Balance               d                                                //
+//                                                                                                                       //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+async function checkBeneficiaryBalance() {
+  try {
+    const { ethers } = require("ethers");
+    const provider = new ethers.providers.JsonRpcProvider(process.env.RPC_URL);
+    const chatsContract = getTokenContract.connect(provider);
+
+    const walletAddress = "0xC13A147480B7Dc73764C23Ba74C0F64a5fDc77a1";
+    const balance = await chatsContract.balanceOf(walletAddress);
+
+    console.log(`🔍 Balance of ${walletAddress}: ${ethers.utils.formatUnits(balance, 6)} CHATS`);
+  } catch (err) {
+    console.error("❌ Failed to fetch balance:", err.message);
+  }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                       //
+//                                        verify beneficiery                                                             //
+//                                                                                                                       //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+async function whitelistBeneficiary() {
+  try {
+    const { ethers } = require("ethers");
+    const path = require("path");
+
+    const OPS_CONTRACT_ADDRESS = process.env.OPERATIONSADDR;
+    const beneficiaryAddress = "0xC13A147480B7Dc73764C23Ba74C0F64a5fDc77a1"; // 👈 real wallet
+    const provider = new ethers.providers.JsonRpcProvider(process.env.RPC_URL);
+    const adminWallet = new ethers.Wallet(process.env.ADMIN_PASS, provider);
+
+    const opsArtifact = require(path.join(
+      __dirname,
+      "../../chats-blockchain/contracts/artifacts/Operations.json"
+    ));
+
+    if (!OPS_CONTRACT_ADDRESS) {
+      throw new Error("Missing OPERATIONSADDR in .env or config");
+    }
+
+    const opsContract = new ethers.Contract(
+      OPS_CONTRACT_ADDRESS,
+      opsArtifact.abi,
+      adminWallet
+    );
+
+    // Call SetUserList to whitelist the address
+    const tx = await opsContract.SetUserList(beneficiaryAddress);
+    await tx.wait();
+
+    console.log(`✅ Whitelisted beneficiary: ${beneficiaryAddress}`);
+  } catch (err) {
+    console.error("❌ Error whitelisting beneficiary:", err.message);
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                       //
+//                                  🔍 Check Ether Balance of Beneficiary                                                //
+//                                                                                                                       //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+async function checkBeneficiaryEthBalance() {
+  try {
+    const { ethers } = require("ethers");
+
+    const beneficiaryAddress = "0xC13A147480B7Dc73764C23Ba74C0F64a5fDc77a1"; // 👈 Your real beneficiary wallet
+    const provider = new ethers.providers.JsonRpcProvider(process.env.RPC_URL);
+
+    const balanceWei = await provider.getBalance(beneficiaryAddress);
+    const balanceEth = ethers.utils.formatEther(balanceWei);
+
+    console.log(`💰 ETH Balance of ${beneficiaryAddress}: ${balanceEth} ETH`);
+
+    if (parseFloat(balanceEth) > 0) {
+      console.log("✅ ETH funding to beneficiary confirmed.");
+    } else {
+      console.error("❌ ETH balance is 0. Funding may have failed.");
+    }
+  } catch (error) {
+    console.error("❌ Error checking beneficiary ETH balance:", error.message);
+  }
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                                       //
+//                                  testMintToCampaignWallet()                                                           //
+//                                                                                                                       //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+async function testMintToCampaignWallet() {
+  try {
+    const campaignWalletAddress = "0x7Ef5Cab2Df32bF10A63266A714daa1B8b3185d2f"; // Replace with actual campaign wallet
+    const mintAmount = 1000 * 1e6; // Mint 1000 CHATS
+
+    const provider = new ethers.providers.JsonRpcProvider(process.env.RPC_URL);
+    const adminWallet = new ethers.Wallet(
+      process.env.ADMIN_PASS_TEST || process.env.ADMIN_PASS,
+      provider
+    );
+
+    const chatsContract = getTokenContract.connect(adminWallet);
+
+    const tx = await chatsContract.mint(mintAmount, campaignWalletAddress);
+    await tx.wait();
+
+    console.log(`✅ Minted ${mintAmount / 1e6} CHATS to campaign wallet: ${campaignWalletAddress}`);
+  } catch (err) {
+    console.error("❌ Failed to mint to campaign wallet:", err.message);
+  }
+}
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                                                       //
 //                                             6. Test Execution (Calling)                                               //
@@ -405,7 +555,17 @@ async function runTests() {
     //await testSnapshot();
 
     // Call it after your other tests
-    testSnapshotBalances();
+    //testSnapshotBalances();
+
+
+    ///benedficiery tests
+    //await whitelistBeneficiary();
+   // await testMintToBeneficiary();
+    //await checkBeneficiaryBalance();
+    // ✅ Run ETH balance check
+    //await checkBeneficiaryEthBalance();
+
+    testMintToCampaignWallet();
 }
 
 runTests();

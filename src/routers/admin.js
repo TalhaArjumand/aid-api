@@ -32,6 +32,9 @@ router.post(
 
 router.post('/update-model', AdminController.updateModel);
 router.post('/register-vendor', AdminVendor, UsersController.createVendor);
+// 👉 ADD BELOW:
+router.post('/register-ngo', SuperAdminAuth, AdminController.registerNGO);
+
 router.get('/campaign-info/:campaign_id', CampaignController.campaignInfo);
 // router.post("/ngo-register", AuthCtrl.createAdminUser);
 // router.post("/register/special-case", AuthCtrl.specialCaseRegistration);

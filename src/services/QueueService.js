@@ -1,7 +1,11 @@
 const {Message} = require('@droidsolutions-oss/amqp-ts');
 const {Transaction} = require('../models');
-const {RabbitMq, Logger} = require('../libs');
+const RabbitMq = require('../libs/RabbitMQ/Connection');
+const { Logger } = require('../libs');
 const {generateTransactionRef, AclRoles} = require('../utils');
+
+// 🛠 Add this line here:
+console.log('RabbitMq prototype:', Object.getOwnPropertyNames(Object.getPrototypeOf(RabbitMq)));
 const {
   FUND_CAMPAIGN_WITH_CRYPTO,
   CREATE_WALLET,
@@ -75,226 +79,226 @@ const CampaignService = require('./CampaignService');
 const OrganisationService = require('./OrganisationService');
 const {BeneficiaryService} = require('.');
 
-const fundBeneficiaries = RabbitMq['default'].declareQueue(FUND_BENEFICIARIES, {
+const fundBeneficiaries = RabbitMq.declareQueue(FUND_BENEFICIARIES, {
   durable: true
 });
 
-const disburseItem = RabbitMq['default'].declareQueue(DISBURSE_ITEM, {
+const disburseItem = RabbitMq.declareQueue(DISBURSE_ITEM, {
   durable: true
 });
-const confirmDisburseItem = RabbitMq['default'].declareQueue(
+const confirmDisburseItem = RabbitMq.declareQueue(
   CONFIRM_AND_DISBURSE_ITEM,
   {
     durable: true
   }
 );
-const fundBeneficiary = RabbitMq['default'].declareQueue(FUND_BENEFICIARY, {
+const fundBeneficiary = RabbitMq.declareQueue(FUND_BENEFICIARY, {
   durable: true
 });
-const reFundBeneficiaries = RabbitMq['default'].declareQueue(
+const reFundBeneficiaries = RabbitMq.declareQueue(
   RE_FUN_BENEFICIARIES,
   {
     durable: true
   }
 );
-const createWalletQueue = RabbitMq['default'].declareQueue(CREATE_WALLET, {
+const createWalletQueue = RabbitMq.declareQueue(CREATE_WALLET, {
   durable: true
 });
-const payStackDepositQueue = RabbitMq['default'].declareQueue(
+const payStackDepositQueue = RabbitMq.declareQueue(
   PAYSTACK_DEPOSIT,
   {
     durable: true
   }
 );
 
-const payStackCampaignDepositQueue = RabbitMq['default'].declareQueue(
+const payStackCampaignDepositQueue = RabbitMq.declareQueue(
   PAYSTACK_CAMPAIGN_DEPOSIT,
   {
     durable: true
   }
 );
 
-const verifyFaitDepositQueue = RabbitMq['default'].declareQueue(
+const verifyFaitDepositQueue = RabbitMq.declareQueue(
   VERIFY_FIAT_DEPOSIT,
   {
     durable: true
   }
 );
 
-const processOrderQueue = RabbitMq['default'].declareQueue(
+const processOrderQueue = RabbitMq.declareQueue(
   PROCESS_VENDOR_ORDER,
   {
     durable: true
   }
 );
 
-const funNFTCampaign = RabbitMq['default'].declareQueue(FUN_NFT_CAMPAIGN, {
+const funNFTCampaign = RabbitMq.declareQueue(FUN_NFT_CAMPAIGN, {
   durable: true
 });
 
-const approveCampaignAndFund = RabbitMq['default'].declareQueue(
+const approveCampaignAndFund = RabbitMq.declareQueue(
   FROM_NGO_TO_CAMPAIGN,
   {
     durable: true
   }
 );
 
-const fundVendorBankAccount = RabbitMq['default'].declareQueue(
+const fundVendorBankAccount = RabbitMq.declareQueue(
   PAYSTACK_VENDOR_WITHDRAW,
   {
     durable: true
   }
 );
 
-const fundBeneficiaryBankAccount = RabbitMq['default'].declareQueue(
+const fundBeneficiaryBankAccount = RabbitMq.declareQueue(
   PAYSTACK_BENEFICIARY_WITHDRAW,
   {
     durable: true
   }
 );
 
-const payForProduct = RabbitMq['default'].declareQueue(PAY_FOR_PRODUCT, {
+const payForProduct = RabbitMq.declareQueue(PAY_FOR_PRODUCT, {
   durable: true
 });
 
-const beneficiaryFundBeneficiary = RabbitMq['default'].declareQueue(
+const beneficiaryFundBeneficiary = RabbitMq.declareQueue(
   TRANSFER_FROM_TO_BENEFICIARY,
   {
     durable: true
   }
 );
-const deployNewCollection = RabbitMq['default'].declareQueue(
+const deployNewCollection = RabbitMq.declareQueue(
   DEPLOY_NFT_COLLECTION,
   {
     durable: true
   }
 );
 
-const deployEscrowCollection = RabbitMq['default'].declareQueue(ESCROW_HASH, {
+const deployEscrowCollection = RabbitMq.declareQueue(ESCROW_HASH, {
   durable: true
 });
 
-const nftMintingLimit = RabbitMq['default'].declareQueue(NFT_MINTING_LIMIT, {
+const nftMintingLimit = RabbitMq.declareQueue(NFT_MINTING_LIMIT, {
   durable: true
 });
 
-const confirmAndSetMLimit = RabbitMq['default'].declareQueue(
+const confirmAndSetMLimit = RabbitMq.declareQueue(
   CONFIRM_AND_CREATE_MINTING_LIMIT,
   {
     durable: true
   }
 );
-const mintNFT = RabbitMq['default'].declareQueue(MINT_NFT, {
+const mintNFT = RabbitMq.declareQueue(MINT_NFT, {
   durable: true
 });
 
-const confirmAndSendMintToken = RabbitMq['default'].declareQueue(
+const confirmAndSendMintToken = RabbitMq.declareQueue(
   CONFIRM_AND_SEND_MINT_NFT,
   {
     durable: true
   }
 );
 
-const confirmAndMintToken = RabbitMq['default'].declareQueue(
+const confirmAndMintToken = RabbitMq.declareQueue(
   CONFIRM_AND_MINT_NFT,
   {
     durable: true
   }
 );
 
-const confirmAndUpdateCampaign = RabbitMq['default'].declareQueue(
+const confirmAndUpdateCampaign = RabbitMq.declareQueue(
   CONFIRM_AND_UPDATE_CAMPAIGN,
   {
     durable: true
   }
 );
 
-const confirmAndCreateWalletQueue = RabbitMq['default'].declareQueue(
+const confirmAndCreateWalletQueue = RabbitMq.declareQueue(
   CONFIRM_AND_CREATE_WALLET,
   {
     durable: true
   }
 );
-const loopItemBeneficiary = RabbitMq['default'].declareQueue(
+const loopItemBeneficiary = RabbitMq.declareQueue(
   LOOP_ITEM_BENEFICIARY,
   {
     durable: true
   }
 );
 
-const processNFTOrderQueue = RabbitMq['default'].declareQueue(
+const processNFTOrderQueue = RabbitMq.declareQueue(
   TRANSFER_MINT_TO_VENDOR,
   {
     durable: true
   }
 );
 
-const confirmAndPayVendor = RabbitMq['default'].declareQueue(
+const confirmAndPayVendor = RabbitMq.declareQueue(
   CONFIRM_AND_PAY_VENDOR,
   {
     durable: true
   }
 );
-const confirmNgoFunding = RabbitMq['default'].declareQueue(
+const confirmNgoFunding = RabbitMq.declareQueue(
   CONFIRM_NGO_FUNDING,
   {
     durable: true
   }
 );
 
-const confirmCampaignFunding = RabbitMq['default'].declareQueue(
+const confirmCampaignFunding = RabbitMq.declareQueue(
   CONFIRM_CAMPAIGN_FUNDING,
   {
     durable: true
   }
 );
 
-const confirmBFundingBeneficiary = RabbitMq['default'].declareQueue(
+const confirmBFundingBeneficiary = RabbitMq.declareQueue(
   CONFIRM_BENEFICIARY_FUNDING_BENEFICIARY,
   {
     durable: true
   }
 );
 
-const confirmPersonalBFundingBeneficiary = RabbitMq['default'].declareQueue(
+const confirmPersonalBFundingBeneficiary = RabbitMq.declareQueue(
   CONFIRM_PERSONAL_BENEFICIARY_FUNDING_BENEFICIARY,
   {
     durable: true
   }
 );
 
-const confirmOrderQueue = RabbitMq['default'].declareQueue(
+const confirmOrderQueue = RabbitMq.declareQueue(
   CONFIRM_VENDOR_ORDER_QUEUE,
   {
     durable: true
   }
 );
 
-const confirmFundSingleBeneficiary = RabbitMq['default'].declareQueue(
+const confirmFundSingleBeneficiary = RabbitMq.declareQueue(
   CONFIRM_FUND_SINGLE_BENEFICIARY,
   {
     durable: true
   }
 );
 
-const confirmVRedeem = RabbitMq['default'].declareQueue(CONFIRM_VENDOR_REDEEM, {
+const confirmVRedeem = RabbitMq.declareQueue(CONFIRM_VENDOR_REDEEM, {
   durable: true
 });
 
-const confirmBRedeem = RabbitMq['default'].declareQueue(
+const confirmBRedeem = RabbitMq.declareQueue(
   CONFIRM_BENEFICIARY_REDEEM,
   {
     durable: true
   }
 );
 
-const confirmBTransferRedeem = RabbitMq['default'].declareQueue(
+const confirmBTransferRedeem = RabbitMq.declareQueue(
   CONFIRM_BENEFICIARY_TRANSFER_REDEEM,
   {
     durable: true
   }
 );
-const redeemBeneficiaryOnce = RabbitMq['default'].declareQueue(
+const redeemBeneficiaryOnce = RabbitMq.declareQueue(
   REDEEM_BENEFICIARY_ONCE,
   {
     prefetch: 1,
@@ -302,189 +306,189 @@ const redeemBeneficiaryOnce = RabbitMq['default'].declareQueue(
   }
 );
 
-const sendBForConfirmation = RabbitMq['default'].declareQueue(
+const sendBForConfirmation = RabbitMq.declareQueue(
   SEND_EACH_BENEFICIARY_FOR_CONFIRMATION,
   {
     durable: true
   }
 );
 
-const sendBForRedeem = RabbitMq['default'].declareQueue(
+const sendBForRedeem = RabbitMq.declareQueue(
   SEND_EACH_BENEFICIARY_FOR_REDEEMING,
   {
     durable: true
   }
 );
-const confirmWithHoldFundsQueue = RabbitMq['default'].declareQueue(
+const confirmWithHoldFundsQueue = RabbitMq.declareQueue(
   CONFIRM_WITHHOLDING_FUND,
   {
     durable: true
   }
 );
-const withHoldFundsQueue = RabbitMq['default'].declareQueue(WITHHELD_FUND, {
+const withHoldFundsQueue = RabbitMq.declareQueue(WITHHELD_FUND, {
   durable: true
 });
-const increaseGasForRefund = RabbitMq['default'].declareQueue(
+const increaseGasForRefund = RabbitMq.declareQueue(
   INCREASE_GAS_FOR_RE_FUND_BENEFICIARIES,
   {
     durable: true
   }
 );
-const increaseGasForTransfer = RabbitMq['default'].declareQueue(
+const increaseGasForTransfer = RabbitMq.declareQueue(
   INCREASE_GAS_NFT_TRANSFER,
   {
     durable: true
   }
 );
 
-const confirmRefundBeneficiary = RabbitMq['default'].declareQueue(
+const confirmRefundBeneficiary = RabbitMq.declareQueue(
   CONFIRM_RE_FUND_BENEFICIARIES,
   {
     durable: true
   }
 );
 
-const increaseAllowance = RabbitMq['default'].declareQueue(
+const increaseAllowance = RabbitMq.declareQueue(
   INCREASE_ALLOWANCE_GAS,
   {
     durable: true
   }
 );
 
-const increaseTransferCampaignGas = RabbitMq['default'].declareQueue(
+const increaseTransferCampaignGas = RabbitMq.declareQueue(
   INCREASE_TRANSFER_CAMPAIGN_GAS,
   {
     durable: true
   }
 );
 
-const increaseTransferBeneficiaryGas = RabbitMq['default'].declareQueue(
+const increaseTransferBeneficiaryGas = RabbitMq.declareQueue(
   INCREASE_TRANSFER_BENEFICIARY_GAS,
   {
     durable: true
   }
 );
 
-const increaseTransferPersonalBeneficiaryGas = RabbitMq['default'].declareQueue(
+const increaseTransferPersonalBeneficiaryGas = RabbitMq.declareQueue(
   INCREASE_TRANSFER_PERSONAL_BENEFICIARY_GAS,
   {
     durable: true
   }
 );
 
-const increaseGasForBWithdrawal = RabbitMq['default'].declareQueue(
+const increaseGasForBWithdrawal = RabbitMq.declareQueue(
   INCREASE_GAS_FOR_BENEFICIARY_WITHDRAWAL,
   {
     durable: true
   }
 );
 
-const increaseGasForVWithdrawal = RabbitMq['default'].declareQueue(
+const increaseGasForVWithdrawal = RabbitMq.declareQueue(
   INCREASE_GAS_FOR_VENDOR_WITHDRAWAL,
   {
     durable: true
   }
 );
 
-const increaseGasFoBRWithdrawal = RabbitMq['default'].declareQueue(
+const increaseGasFoBRWithdrawal = RabbitMq.declareQueue(
   INCREASE_REDEEM_GAS_BREDEEM,
   {
     durable: true
   }
 );
 
-const increaseGasForMinting = RabbitMq['default'].declareQueue(
+const increaseGasForMinting = RabbitMq.declareQueue(
   INCREASE_MINTING_GAS,
   {
     durable: true
   }
 );
 
-const increaseGasFeeVTransferFrom = RabbitMq['default'].declareQueue(
+const increaseGasFeeVTransferFrom = RabbitMq.declareQueue(
   INCREASE_VTRANSFER_FROM_GAS,
   {
     durable: true
   }
 );
 
-const increaseGasFeeForSB = RabbitMq['default'].declareQueue(
+const increaseGasFeeForSB = RabbitMq.declareQueue(
   INCREASE_GAS_SINGLE_BENEFICIARY,
   {
     durable: true
   }
 );
 
-const approveOneBeneficiary = RabbitMq['default'].declareQueue(
+const approveOneBeneficiary = RabbitMq.declareQueue(
   APPROVE_TO_SPEND_ONE_BENEFICIARY,
   {
     durable: true
   }
 );
 
-const confirmOneBeneficiary = RabbitMq['default'].declareQueue(
+const confirmOneBeneficiary = RabbitMq.declareQueue(
   CONFIRM_ONE_BENEFICIARY,
   {
     durable: true
   }
 );
 
-const increaseGasNewCollection = RabbitMq['default'].declareQueue(
+const increaseGasNewCollection = RabbitMq.declareQueue(
   INCREASE_GAS_FOR_NEW_COLLECTION,
   {
     durable: true
   }
 );
 
-const increaseGasMintingLimit = RabbitMq['default'].declareQueue(
+const increaseGasMintingLimit = RabbitMq.declareQueue(
   INCREASE_GAS_FOR_MINTING_LIMIT,
   {
     durable: true
   }
 );
 
-const increaseGasMintNFT = RabbitMq['default'].declareQueue(
+const increaseGasMintNFT = RabbitMq.declareQueue(
   INCREASE_GAS_MINT_NFT,
   {
     durable: true
   }
 );
 
-const approveNFTSpending = RabbitMq['default'].declareQueue(
+const approveNFTSpending = RabbitMq.declareQueue(
   APPROVE_NFT_SPENDING,
   {
     durable: true
   }
 );
 
-const increaseGasApproveSpending = RabbitMq['default'].declareQueue(
+const increaseGasApproveSpending = RabbitMq.declareQueue(
   INCREASE_GAS_APPROVE_SPENDING,
   {
     durable: true
   }
 );
 
-const increaseGasWithHoldFunds = RabbitMq['default'].declareQueue(
+const increaseGasWithHoldFunds = RabbitMq.declareQueue(
   WITHHOLD_FUND_GAS_ERROR,
   {
     durable: true
   }
 );
 
-const fundCampaignWithCrypto = RabbitMq['default'].declareQueue(
+const fundCampaignWithCrypto = RabbitMq.declareQueue(
   FUND_CAMPAIGN_WITH_CRYPTO,
   {
     durable: true
   }
 );
 
-const confirmFundCampaignWithCrypto = RabbitMq['default'].declareQueue(
+const confirmFundCampaignWithCrypto = RabbitMq.declareQueue(
   CONFIRM_FUND_CAMPAIGN_WITH_CRYPTO,
   {
     durable: true
   }
 );
 
-const gasFundCampaignWithCrypto = RabbitMq['default'].declareQueue(
+const gasFundCampaignWithCrypto = RabbitMq.declareQueue(
   INCREASE_GAS_FOR_FUND_CAMPAIGN_WITH_CRYPTO,
   {
     durable: true
@@ -596,7 +600,10 @@ class QueueService {
     wallet_uuid,
     campaign,
     beneficiary
-  ) {
+  ) 
+  {
+    Logger.info("🚨 Beneficiary in approveOneBeneficiary:", JSON.stringify(beneficiary, null, 2));
+
     const transaction = await Transaction.create({
       reference: generateTransactionRef(),
       BeneficiaryId: beneficiary.UserId,
@@ -618,7 +625,9 @@ class QueueService {
       beneficiary,
       transactionId: transaction.uuid
     };
-    await beneficiary.update({status: 'in_progress'});
+    
+    //await beneficiary.update({status: 'in_progress'});
+    await beneficiary.update({ status: 'pending' }); // ✅ valid enum value
     approveOneBeneficiary.send(
       new Message(payload, {
         contentType: 'application/json'
@@ -1172,6 +1181,9 @@ class QueueService {
   }
   static async createWallet(ownerId, wallet_type, CampaignId = null) {
     const payload = {wallet_type, ownerId, CampaignId};
+
+    // 🛠 Add a debug log here
+  console.log('🚀 createWallet() called. Sending payload to RabbitMQ:', payload);
     createWalletQueue.send(
       new Message(payload, {
         contentType: 'application/json'
@@ -1595,6 +1607,8 @@ class QueueService {
     task_assignment,
     amount_disburse
   ) {
+    console.log("🐛 Inside FundBeneficiary");
+    console.log("➡️ campaignWallet passed in:", campaignWallet);
     const transaction = await Transaction.create({
       amount: amount_disburse,
       reference: generateTransactionRef(),

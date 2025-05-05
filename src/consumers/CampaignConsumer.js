@@ -8,7 +8,11 @@ const {
   ProductBeneficiary,
   Order
 } = require('../models');
-const {RabbitMq, Logger} = require('../libs');
+
+const Logger = require('../libs/Logger');
+const RabbitMq = require('../libs/RabbitMQ/Connection');
+console.log('RabbitMq prototype:', Object.getOwnPropertyNames(Object.getPrototypeOf(RabbitMq)));
+
 const {
   FUND_CAMPAIGN_WITH_CRYPTO,
   CONFIRM_FUND_CAMPAIGN_WITH_CRYPTO,
@@ -18,7 +22,7 @@ const {BlockchainService, QueueService} = require('../services');
 
 const consumerFunctions = require('../utils/consumerFunctions');
 
-const fundWithCrypto = RabbitMq['default'].declareQueue(
+const fundWithCrypto = RabbitMq.declareQueue(
   FUND_CAMPAIGN_WITH_CRYPTO,
   {
     durable: true,
@@ -26,7 +30,7 @@ const fundWithCrypto = RabbitMq['default'].declareQueue(
   }
 );
 
-const confirmFundWithCrypto = RabbitMq['default'].declareQueue(
+const confirmFundWithCrypto = RabbitMq.declareQueue(
   CONFIRM_FUND_CAMPAIGN_WITH_CRYPTO,
   {
     durable: true,
@@ -34,7 +38,7 @@ const confirmFundWithCrypto = RabbitMq['default'].declareQueue(
   }
 );
 
-const increaseGasFundWithCrypto = RabbitMq['default'].declareQueue(
+const increaseGasFundWithCrypto = RabbitMq.declareQueue(
   INCREASE_GAS_FOR_FUND_CAMPAIGN_WITH_CRYPTO,
   {
     durable: true,
@@ -42,7 +46,7 @@ const increaseGasFundWithCrypto = RabbitMq['default'].declareQueue(
   }
 );
 
-RabbitMq['default'].completeConfiguration().then(() => {
+RabbitMq.completeConfiguration().then(() => {
   fundWithCrypto
     .activateConsumer(async msg => {
       const {campaignWallet, campaign, amount, transactionId} =
@@ -115,8 +119,8 @@ RabbitMq['default'].completeConfiguration().then(() => {
       );
     });
 
-  increaseGasFundWithCrypto
-    .activateConsumer(async () => {
+    increaseGasFundWithCrypto
+    .activateConsumer(async msg => {   // <-- small fix here
       const {keys, message} = msg.getContent();
       const {transactionId, campaign, campaignWallet, amount} = message;
       const gasFee = await BlockchainService.reRunContract(

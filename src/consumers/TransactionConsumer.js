@@ -38,7 +38,12 @@ const {
   CONFIRM_RE_FUND_BENEFICIARIES,
   INCREASE_GAS_FOR_RE_FUND_BENEFICIARIES
 } = require('../constants/queues.constant');
-const {RabbitMq, Logger} = require('../libs');
+// ✅ INSTEAD, write separately:
+const Logger = require('../libs/Logger');
+const RabbitMq = require('../libs/RabbitMQ/Connection'); // Correct import ✅
+
+// Add the console log immediately after import:
+console.log('RabbitMq prototype:', Object.getOwnPropertyNames(Object.getPrototypeOf(RabbitMq)));
 const {
   WalletService,
   QueueService,
@@ -70,7 +75,7 @@ const {
 const {RERUN_QUEUE_AFTER} = require('../constants/rerun.queue');
 const BeneficiariesService = require('../services/BeneficiaryService');
 
-const verifyFiatDepsoitQueue = RabbitMq['default'].declareQueue(
+const verifyFiatDepsoitQueue = RabbitMq.declareQueue(
   VERIFY_FIAT_DEPOSIT,
   {
     durable: true,
@@ -78,21 +83,21 @@ const verifyFiatDepsoitQueue = RabbitMq['default'].declareQueue(
   }
 );
 
-const processFundBeneficiary = RabbitMq['default'].declareQueue(
+const processFundBeneficiary = RabbitMq.declareQueue(
   FUND_BENEFICIARY,
   {
     durable: true,
     prefetch: 1
   }
 );
-const processFundBeneficiaries = RabbitMq['default'].declareQueue(
+const processFundBeneficiaries = RabbitMq.declareQueue(
   FUND_BENEFICIARIES,
   {
     durable: true,
     prefetch: 1
   }
 );
-const processVendorOrderQueue = RabbitMq['default'].declareQueue(
+const processVendorOrderQueue = RabbitMq.declareQueue(
   PROCESS_VENDOR_ORDER,
   {
     durable: true,
@@ -100,7 +105,7 @@ const processVendorOrderQueue = RabbitMq['default'].declareQueue(
   }
 );
 
-const processCampaignFund = RabbitMq['default'].declareQueue(
+const processCampaignFund = RabbitMq.declareQueue(
   FROM_NGO_TO_CAMPAIGN,
   {
     durable: true,
@@ -108,7 +113,7 @@ const processCampaignFund = RabbitMq['default'].declareQueue(
   }
 );
 
-const processBeneficiaryPaystackWithdrawal = RabbitMq['default'].declareQueue(
+const processBeneficiaryPaystackWithdrawal = RabbitMq.declareQueue(
   PAYSTACK_BENEFICIARY_WITHDRAW,
   {
     durable: true,
@@ -116,7 +121,7 @@ const processBeneficiaryPaystackWithdrawal = RabbitMq['default'].declareQueue(
   }
 );
 
-const processVendorPaystackWithdrawal = RabbitMq['default'].declareQueue(
+const processVendorPaystackWithdrawal = RabbitMq.declareQueue(
   PAYSTACK_VENDOR_WITHDRAW,
   {
     durable: true,
@@ -124,7 +129,7 @@ const processVendorPaystackWithdrawal = RabbitMq['default'].declareQueue(
   }
 );
 
-const processCampaignPaystack = RabbitMq['default'].declareQueue(
+const processCampaignPaystack = RabbitMq.declareQueue(
   PAYSTACK_CAMPAIGN_DEPOSIT,
   {
     durable: true,
@@ -132,7 +137,7 @@ const processCampaignPaystack = RabbitMq['default'].declareQueue(
   }
 );
 
-const beneficiaryFundBeneficiary = RabbitMq['default'].declareQueue(
+const beneficiaryFundBeneficiary = RabbitMq.declareQueue(
   TRANSFER_FROM_TO_BENEFICIARY,
   {
     prefetch: 1,
@@ -140,7 +145,7 @@ const beneficiaryFundBeneficiary = RabbitMq['default'].declareQueue(
   }
 );
 
-const confirmNgoFunding = RabbitMq['default'].declareQueue(
+const confirmNgoFunding = RabbitMq.declareQueue(
   CONFIRM_NGO_FUNDING,
   {
     prefetch: 1,
@@ -148,7 +153,7 @@ const confirmNgoFunding = RabbitMq['default'].declareQueue(
   }
 );
 
-const confirmCampaignFunding = RabbitMq['default'].declareQueue(
+const confirmCampaignFunding = RabbitMq.declareQueue(
   CONFIRM_CAMPAIGN_FUNDING,
   {
     prefetch: 1,
@@ -156,7 +161,7 @@ const confirmCampaignFunding = RabbitMq['default'].declareQueue(
   }
 );
 
-const confirmBFundingBeneficiary = RabbitMq['default'].declareQueue(
+const confirmBFundingBeneficiary = RabbitMq.declareQueue(
   CONFIRM_BENEFICIARY_FUNDING_BENEFICIARY,
   {
     prefetch: 1,
@@ -164,7 +169,7 @@ const confirmBFundingBeneficiary = RabbitMq['default'].declareQueue(
   }
 );
 
-const confirmPBFundingBeneficiary = RabbitMq['default'].declareQueue(
+const confirmPBFundingBeneficiary = RabbitMq.declareQueue(
   CONFIRM_PERSONAL_BENEFICIARY_FUNDING_BENEFICIARY,
   {
     prefetch: 1,
@@ -172,7 +177,7 @@ const confirmPBFundingBeneficiary = RabbitMq['default'].declareQueue(
   }
 );
 
-const confirmOrderQueue = RabbitMq['default'].declareQueue(
+const confirmOrderQueue = RabbitMq.declareQueue(
   CONFIRM_VENDOR_ORDER_QUEUE,
   {
     prefetch: 1,
@@ -180,7 +185,7 @@ const confirmOrderQueue = RabbitMq['default'].declareQueue(
   }
 );
 
-const confirmFundSingleB = RabbitMq['default'].declareQueue(
+const confirmFundSingleB = RabbitMq.declareQueue(
   CONFIRM_FUND_SINGLE_BENEFICIARY,
   {
     prefetch: 1,
@@ -188,12 +193,12 @@ const confirmFundSingleB = RabbitMq['default'].declareQueue(
   }
 );
 
-const confirmVRedeem = RabbitMq['default'].declareQueue(CONFIRM_VENDOR_REDEEM, {
+const confirmVRedeem = RabbitMq.declareQueue(CONFIRM_VENDOR_REDEEM, {
   prefetch: 1,
   durable: true
 });
 
-const confirmBRedeem = RabbitMq['default'].declareQueue(
+const confirmBRedeem = RabbitMq.declareQueue(
   CONFIRM_BENEFICIARY_REDEEM,
   {
     prefetch: 1,
@@ -201,7 +206,7 @@ const confirmBRedeem = RabbitMq['default'].declareQueue(
   }
 );
 
-const confirmBTransferRedeem = RabbitMq['default'].declareQueue(
+const confirmBTransferRedeem = RabbitMq.declareQueue(
   CONFIRM_BENEFICIARY_TRANSFER_REDEEM,
   {
     prefetch: 1,
@@ -209,7 +214,7 @@ const confirmBTransferRedeem = RabbitMq['default'].declareQueue(
   }
 );
 
-const redeemBeneficiaryOnce = RabbitMq['default'].declareQueue(
+const redeemBeneficiaryOnce = RabbitMq.declareQueue(
   REDEEM_BENEFICIARY_ONCE,
   {
     prefetch: 1,
@@ -217,7 +222,7 @@ const redeemBeneficiaryOnce = RabbitMq['default'].declareQueue(
   }
 );
 
-const sendBForConfirmation = RabbitMq['default'].declareQueue(
+const sendBForConfirmation = RabbitMq.declareQueue(
   SEND_EACH_BENEFICIARY_FOR_CONFIRMATION,
   {
     prefetch: 1,
@@ -225,7 +230,7 @@ const sendBForConfirmation = RabbitMq['default'].declareQueue(
   }
 );
 
-const sendBForRedeem = RabbitMq['default'].declareQueue(
+const sendBForRedeem = RabbitMq.declareQueue(
   SEND_EACH_BENEFICIARY_FOR_REDEEMING,
   {
     prefetch: 1,
@@ -233,14 +238,14 @@ const sendBForRedeem = RabbitMq['default'].declareQueue(
   }
 );
 
-const increaseAllowance = RabbitMq['default'].declareQueue(
+const increaseAllowance = RabbitMq.declareQueue(
   INCREASE_ALLOWANCE_GAS,
   {
     prefetch: 1,
     durable: true
   }
 );
-const increaseTransferCampaignGas = RabbitMq['default'].declareQueue(
+const increaseTransferCampaignGas = RabbitMq.declareQueue(
   INCREASE_TRANSFER_CAMPAIGN_GAS,
   {
     prefetch: 1,
@@ -248,7 +253,7 @@ const increaseTransferCampaignGas = RabbitMq['default'].declareQueue(
   }
 );
 
-const increaseTransferBeneficiaryGas = RabbitMq['default'].declareQueue(
+const increaseTransferBeneficiaryGas = RabbitMq.declareQueue(
   INCREASE_TRANSFER_BENEFICIARY_GAS,
   {
     prefetch: 1,
@@ -256,14 +261,14 @@ const increaseTransferBeneficiaryGas = RabbitMq['default'].declareQueue(
   }
 );
 
-const increaseTransferPersonalBeneficiaryGas = RabbitMq['default'].declareQueue(
+const increaseTransferPersonalBeneficiaryGas = RabbitMq.declareQueue(
   INCREASE_TRANSFER_PERSONAL_BENEFICIARY_GAS,
   {
     prefetch: 1,
     durable: true
   }
 );
-const increaseGasForBWithdrawal = RabbitMq['default'].declareQueue(
+const increaseGasForBWithdrawal = RabbitMq.declareQueue(
   INCREASE_GAS_FOR_BENEFICIARY_WITHDRAWAL,
   {
     prefetch: 1,
@@ -271,7 +276,7 @@ const increaseGasForBWithdrawal = RabbitMq['default'].declareQueue(
   }
 );
 
-const increaseGasForVWithdrawal = RabbitMq['default'].declareQueue(
+const increaseGasForVWithdrawal = RabbitMq.declareQueue(
   INCREASE_GAS_FOR_VENDOR_WITHDRAWAL,
   {
     prefetch: 1,
@@ -279,7 +284,7 @@ const increaseGasForVWithdrawal = RabbitMq['default'].declareQueue(
   }
 );
 
-const increaseGasFoBRWithdrawal = RabbitMq['default'].declareQueue(
+const increaseGasFoBRWithdrawal = RabbitMq.declareQueue(
   INCREASE_REDEEM_GAS_BREDEEM,
   {
     prefetch: 1,
@@ -287,7 +292,7 @@ const increaseGasFoBRWithdrawal = RabbitMq['default'].declareQueue(
   }
 );
 
-const increaseGasForMinting = RabbitMq['default'].declareQueue(
+const increaseGasForMinting = RabbitMq.declareQueue(
   INCREASE_MINTING_GAS,
   {
     prefetch: 1,
@@ -295,7 +300,7 @@ const increaseGasForMinting = RabbitMq['default'].declareQueue(
   }
 );
 
-const increaseGasVTransferFrom = RabbitMq['default'].declareQueue(
+const increaseGasVTransferFrom = RabbitMq.declareQueue(
   INCREASE_VTRANSFER_FROM_GAS,
   {
     prefetch: 1,
@@ -303,7 +308,7 @@ const increaseGasVTransferFrom = RabbitMq['default'].declareQueue(
   }
 );
 
-const reFundBeneficiaries = RabbitMq['default'].declareQueue(
+const reFundBeneficiaries = RabbitMq.declareQueue(
   RE_FUN_BENEFICIARIES,
   {
     prefetch: 1,
@@ -311,14 +316,14 @@ const reFundBeneficiaries = RabbitMq['default'].declareQueue(
   }
 );
 
-const increaseGasForSB = RabbitMq['default'].declareQueue(
+const increaseGasForSB = RabbitMq.declareQueue(
   INCREASE_GAS_SINGLE_BENEFICIARY,
   {
     prefetch: 1,
     durable: true
   }
 );
-const increaseGasForRefund = RabbitMq['default'].declareQueue(
+const increaseGasForRefund = RabbitMq.declareQueue(
   INCREASE_GAS_FOR_RE_FUND_BENEFICIARIES,
   {
     prefetch: 1,
@@ -326,14 +331,14 @@ const increaseGasForRefund = RabbitMq['default'].declareQueue(
   }
 );
 
-const confirmOneBeneficiary = RabbitMq['default'].declareQueue(
+const confirmOneBeneficiary = RabbitMq.declareQueue(
   CONFIRM_ONE_BENEFICIARY,
   {
     prefetch: 1,
     durable: true
   }
 );
-const approveOneBeneficiary = RabbitMq['default'].declareQueue(
+const approveOneBeneficiary = RabbitMq.declareQueue(
   APPROVE_TO_SPEND_ONE_BENEFICIARY,
   {
     prefetch: 1,
@@ -341,7 +346,7 @@ const approveOneBeneficiary = RabbitMq['default'].declareQueue(
   }
 );
 
-const confirmRefundBeneficiary = RabbitMq['default'].declareQueue(
+const confirmRefundBeneficiary = RabbitMq.declareQueue(
   CONFIRM_RE_FUND_BENEFICIARIES,
   {
     prefetch: 1,
@@ -349,7 +354,7 @@ const confirmRefundBeneficiary = RabbitMq['default'].declareQueue(
   }
 );
 
-const deployEscrowCollection = RabbitMq['default'].declareQueue(ESCROW_HASH, {
+const deployEscrowCollection = RabbitMq.declareQueue(ESCROW_HASH, {
   prefetch: 1,
   durable: true
 });
@@ -434,7 +439,7 @@ const create_transaction = async (amount, sender, receiver, args) => {
   return transaction;
 };
 
-RabbitMq['default']
+RabbitMq
   .completeConfiguration()
   .then(() => {
     verifyFiatDepsoitQueue
@@ -1060,7 +1065,7 @@ RabbitMq['default']
       .then(() => {
         Logger.info(`Running Process For Approving Beneficiaries`);
       });
-    sendBForConfirmation
+      sendBForConfirmation
       .activateConsumer(async msg => {
         const {
           hash,
@@ -1073,41 +1078,61 @@ RabbitMq['default']
           lastIndex,
           token_type
         } = msg.getContent();
-
+    
         await addWalletAmount(amount, uuid);
+    
         let istoken = false;
         let QrCode;
         const smsToken = GenearteSMSToken();
+    
+        // 🔍 Safely prepare beneficiary name
+        const beneficiaryName =
+          (beneficiary?.User?.first_name || '') +
+          ' ' +
+          (beneficiary?.User?.last_name || '');
+    
+          if (!beneficiary?.User) {
+            Logger.warn(
+              `⚠️ [sendBForConfirmation] Missing User data for Beneficiary: ${beneficiary?.UserId}`
+            );
+          
+            // ✅ Fetch the User record manually from DB
+            const User = require('../models').User; // adjust path if needed
+            const fetchedUser = await User.findByPk(beneficiary.UserId);
+          
+            if (fetchedUser) {
+              Logger.info(`✅ User loaded from DB for Beneficiary: ${beneficiary.UserId}`);
+              beneficiary.User = fetchedUser;
+            } else {
+              Logger.error(`❌ User not found in DB for Beneficiary: ${beneficiary.UserId}`);
+              msg.ack(); // prevent retry loop
+              return;
+            }
+          }    
         const qrCodeData = {
           OrganisationId: campaign.OrganisationId,
-          Campaign: {id: campaign.id, title: campaign.title},
+          Campaign: { id: campaign.id, title: campaign.title },
           Beneficiary: {
             id: beneficiary.UserId,
-            name:
-              beneficiary.User.first_name || beneficiary.User.last_name
-                ? beneficiary.User.first_name + ' ' + beneficiary.User.last_name
-                : ''
+            name: beneficiaryName.trim()
           },
           amount
         };
-
+    
         if (token_type === 'papertoken') {
           QrCode = await generateQrcodeURL(JSON.stringify(qrCodeData));
-          Logger.info('Generating QrCode');
-
+          Logger.info('🧾 Generating Paper Token QR Code');
           istoken = true;
         } else if (token_type === 'smstoken') {
-          Logger.info('Generating SmsToken');
+          Logger.info('📲 Generating SMS Token');
           istoken = true;
+    
           await SmsService.sendOtp(
-            `+${beneficiary.User.phone}`,
-            `Hello ${
-              beneficiary.User.first_name || beneficiary.User.last_name
-                ? beneficiary.User.first_name + ' ' + beneficiary.User.last_name
-                : ''
-            } your convexity token is ${smsToken}, you are approved to spend ${amount}.`
+            `+${beneficiary?.User?.phone}`,
+            `Hello ${beneficiaryName.trim()}, your convexity token is ${smsToken}, you are approved to spend ${amount}.`
           );
         }
+    
         if (istoken) {
           await VoucherToken.create({
             organisationId: campaign.OrganisationId,
@@ -1117,23 +1142,23 @@ RabbitMq['default']
             token: token_type === 'papertoken' ? QrCode : smsToken,
             amount
           });
-          istoken = false;
         }
-
-        lastIndex &&
-          (await CampaignService.updateSingleCampaign(campaign.id, {
+    
+        if (lastIndex !== undefined && lastIndex !== null) {
+          await CampaignService.updateSingleCampaign(campaign.id, {
             status: campaign.type === 'cash-for-work' ? 'active' : 'ongoing',
             is_funded: true,
             amount_disbursed: budget
-          }));
-
+          });
+        }
+    
         msg.ack();
       })
       .catch(error => {
-        Logger.error(`RabbitMq Error: ${error}`);
+        Logger.error(`🐛 RabbitMq Error in sendBForConfirmation: ${error.message}`);
       })
       .then(() => {
-        Logger.info(`Running Process For Sending Beneficiary For Confirmation`);
+        Logger.info(`✅ Running Process For Sending Beneficiary For Confirmation`);
       });
     processBeneficiaryPaystackWithdrawal
       .activateConsumer(async msg => {
@@ -2125,8 +2150,13 @@ RabbitMq['default']
           `Running Process For Confirming Beneficiary to Beneficiary Transfer`
         );
       });
-    approveOneBeneficiary
+      approveOneBeneficiary
       .activateConsumer(async msg => {
+        Logger.info('🚀 [approveOneBeneficiary] Message received from queue');
+    
+        const content = msg.getContent();
+        Logger.info('📦 Queue Message Content:', JSON.stringify(content));
+    
         const {
           campaignPrivateKey,
           BAddress,
@@ -2135,12 +2165,12 @@ RabbitMq['default']
           campaign,
           beneficiary,
           transactionId
-        } = msg.getContent();
-
-        Logger.info(`Message: ${JSON.stringify(msg.getContent())}`);
+        } = content;
+    
         const share = amount;
-
-        const {Approved} = await BlockchainService.approveToSpend(
+        Logger.info('🧠 Calling BlockchainService.approveToSpend...');
+    
+        const { Approved } = await BlockchainService.approveToSpend(
           campaignPrivateKey,
           BAddress,
           amount,
@@ -2152,12 +2182,12 @@ RabbitMq['default']
             beneficiary,
             share
           },
-
           'multiple'
         );
-        Logger.info(`Beneficiary: ${JSON.stringify(beneficiary)}`);
-        // Logger.info(`Beneficiary ID: ${beneficiary.id}`);
+    
+        Logger.info(`✅ BlockchainService.approveToSpend result: ${Approved}`);
         if (!Approved) {
+          Logger.error('❌ approveToSpend returned null or undefined!');
           await BeneficiaryService.spendingStatus(
             beneficiary.CampaignId,
             beneficiary.UserId,
@@ -2165,10 +2195,10 @@ RabbitMq['default']
               status: 'error'
             }
           );
-          Logger.info(`Approve Spending Failed. Retrying`);
           msg.nack();
           return;
         }
+    
         const find = await BeneficiaryService.spendingStatus(
           beneficiary.CampaignId,
           beneficiary.UserId,
@@ -2176,22 +2206,26 @@ RabbitMq['default']
             status: 'processing'
           }
         );
-        Logger.info(`Approve Spending Processing: ${find.status}`);
+    
+        Logger.info(`📌 Updated status to processing: ${find.status}`);
+    
         await QueueService.confirmOneBeneficiary(
           Approved,
           wallet_uuid,
           transactionId,
           beneficiary
         );
-        Logger.info(`Approve Spending Processing: ${find.status}`);
+    
+        Logger.info(`🎯 QueueService.confirmOneBeneficiary sent with hash: ${Approved}`);
+        msg.ack(); // 👈 Add this
       })
       .catch(error => {
         Logger.error(`RabbitMq Error: ${error}`);
       })
-
       .then(_ => {
         Logger.info(`Running Process For Approving Single Beneficiary`);
       });
+    
     confirmOneBeneficiary
       .activateConsumer(async msg => {
         const {hash, uuid, transactionId, beneficiary} = msg.getContent();
@@ -2253,3 +2287,6 @@ RabbitMq['default']
   .catch(error => {
     console.log(`RabbitMq Error: ${error}`);
   });
+
+
+

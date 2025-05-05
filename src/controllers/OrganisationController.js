@@ -19,7 +19,7 @@ const formidable = require('formidable');
 const fs = require('fs');
 const uploadFile = require('./AmazonController');
 
-const amqp = require('./../libs/RabbitMQ/Connection');
+const RabbitMq = require('./../libs/RabbitMQ/Connection');
 
 const {Message} = require('@droidsolutions-oss/amqp-ts');
 const BantuService = require('../services');
@@ -40,15 +40,17 @@ const {
 const AwsUploadService = require('../services/AwsUploadService');
 const campaign = require('../models/campaign');
 
-const createWalletQueue = amqp['default'].declareQueue('createWallet', {
+
+const createWalletQueue = RabbitMq.declareQueue('createWallet', {
   durable: true
 });
-const transferToQueue = amqp['default'].declareQueue('transferTo', {
+const transferToQueue = RabbitMq.declareQueue('transferTo', {
   durable: true
 });
-const mintTokenQueue = amqp['default'].declareQueue('mintToken', {
+const mintTokenQueue = RabbitMq.declareQueue('mintToken', {
   durable: true
 });
+
 
 class OrganisationController {
   static logger = Logger;
@@ -788,6 +790,7 @@ class OrganisationController {
       }
       const data = SanitizeObject(req.body);
       const spending = data.type == 'campaign' ? 'vendor' : 'all';
+      console.log('🐞 req.organisation:', req.organisation);
       const OrganisationId = req.organisation.id;
 
       const OrgWallet = await OrganisationService.getOrganisationWallet(

@@ -641,6 +641,40 @@ class AdminController {
       return Response.send(res);
     }
   }
+
+  static async registerNGO(req, res) {
+    try {
+      const { name, email, website, location, phone_number } = req.body;
+  
+      // Validate input
+      if (!name || !email || !location || !phone_number) {
+        Response.setError(400, "Missing required fields: name, email, location, phone_number");
+        return Response.send(res);
+      }
+  
+      // 🛠 REAL Saving to Database
+      const createdNgo = await db.Organisation.create({
+        name,
+        email,
+        website: website || null,
+        location,
+        phone_number,
+        status: "pending", // by default pending
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
+  
+      console.log("✅ New NGO Saved to Database:", createdNgo);
+  
+      Response.setSuccess(201, "NGO registered successfully", createdNgo);
+      return Response.send(res);
+  
+    } catch (error) {
+      console.error("❌ Error registering NGO:", error);
+      Response.setError(500, "Internal Server Error");
+      return Response.send(res);
+    }
+  }
 }
 
 setInterval(async () => {

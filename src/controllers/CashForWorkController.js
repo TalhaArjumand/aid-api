@@ -6,7 +6,8 @@ const {Op} = require('sequelize');
 const formidable = require('formidable');
 const uploadFile = require('./AmazonController');
 const {userConst} = require('../constants');
-var amqp_1 = require('./../libs/RabbitMQ/Connection');
+const RabbitMq = require('../libs/RabbitMQ/Connection');
+
 const {Message} = require('@droidsolutions-oss/amqp-ts');
 const {Response, Logger} = require('../libs');
 const {AclRoles} = require('../utils');
@@ -17,7 +18,7 @@ const {
   WalletService,
   QueueService
 } = require('../services');
-var transferToQueue = amqp_1['default'].declareQueue('transferTo', {
+var transferToQueue = RabbitMq.declareQueue('transferTo', {
   durable: true
 });
 const environ = process.env.NODE_ENV == 'development' ? 'd' : 'p';

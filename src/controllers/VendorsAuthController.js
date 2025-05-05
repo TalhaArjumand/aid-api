@@ -7,8 +7,9 @@ const {data} = require('../libs/Utils');
 const {Message} = require('@droidsolutions-oss/amqp-ts');
 var amqp_1 = require('./../libs/RabbitMQ/Connection');
 
-var queue = amqp_1['default'].declareQueue('createWallet', {
-  durable: true,
+const RabbitMq = require('../libs/RabbitMQ/Connection');
+var queue = RabbitMq.declareQueue('createWallet', {
+  durable: true
 });
 
 const Validator = require('validatorjs');

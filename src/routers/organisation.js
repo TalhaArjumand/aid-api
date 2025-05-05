@@ -1,4 +1,6 @@
 const router = require('express').Router();
+const { Auth: authenticate } = require('../middleware/auth');
+const resolveOrgFromUser = require('../middleware/resolveOrgFromUser');
 
 const {
   WalletController,
@@ -33,6 +35,16 @@ const {
   ParamValidator
 } = require('../validators');
 
+
+
+router.post(
+  '/campaign',
+   authenticate,                // sets req.user from JWT
+  resolveOrgFromUser,          // sets req.organisation from user
+  OrganisationController.createCampaign
+);
+
+
 router.post('/flutterwave/webhook', OrganisationController.mintToken);
 router.post('/flutterwave/webhook2', OrganisationController.mintToken2);
 router.post('/register', OrganisationController.register);
@@ -51,8 +63,8 @@ router.get(
   '/transactions/:organisationId',
   OrganisationController.fetchTransactions
 );
-router.post('/campaign', OrganisationController.createCampaign);
-router.put('/campaign', OrganisationController.updateCampaign);
+//]router.post('/campaign', OrganisationController.createCampaign);
+//router.put('/campaign', OrganisationController.updateCampaign);
 router.post('/update-profile', OrganisationController.updateProfile);
 router.post('/transfer/token', OrganisationController.transferToken);
 router.get('/financials/:id', OrganisationController.getFinancials);

@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  rabbitmq:
+    image: "rabbitmq:3.8.14-alpine"
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"     # For backend/consumer connection
+      - "15672:15672"   # For RabbitMQ web UI
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+    networks:
+      - rabbitmq
+    restart: unless-stopped
+
+networks:
+  rabbitmq:
+    driver: bridge
