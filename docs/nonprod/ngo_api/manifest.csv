@@ -3,3 +3,4 @@ date,focus,case_file,note_file
 2025-05-02,"API tests (unit/integration) + bug fixes",tests/nonprod/ngo_api/cases/2025-05-02.json,docs/nonprod/ngo_api/daily/2025-05-02.md
 2025-05-03,"API refactor/performance/security hardening",tests/nonprod/ngo_api/cases/2025-05-03.json,docs/nonprod/ngo_api/daily/2025-05-03.md
 2025-05-04,"API docs/config/chore and release notes",tests/nonprod/ngo_api/cases/2025-05-04.json,docs/nonprod/ngo_api/daily/2025-05-04.md
+2025-05-05,"API controllers/routes for current flow",tests/nonprod/ngo_api/cases/2025-05-05.json,docs/nonprod/ngo_api/daily/2025-05-05.md
