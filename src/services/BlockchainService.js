@@ -11,6 +11,8 @@ const path = require('path'); // ✅ Required for safe path resolution
 
 const {switchWallet} = require('../config');
 
+const { getOpsContract, getTokenContract } = require(path.join(__dirname, "../../../chats-blockchain/src/resources/web3config"));
+
 // ✅ Load Chats ABI from artifacts
 const chatsJsonPath = path.join(
   __dirname,
@@ -510,48 +512,65 @@ class BlockchainService {
     });
   }
   static async mintToken(mintTo, amount, message, type) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        Logger.info('Minting token');
-        const payload = {mintTo, amount};
-        const checksum = Encryption.encryptTokenPayload(payload);
-        const {data} = await Axios.post(
-          `${tokenConfig.baseURL}/txn/mint/${amount}/${mintTo}`,
-          null,
-          {
-            headers: {
-              'X-CHECKSUM': checksum
-            }
-          }
-        );
-        Logger.info('Token minted', data);
-        resolve(data);
-      } catch (error) {
-        Logger.error(
-          `Error minting token: ${JSON.stringify(error.response.data)}`
-        );
-        Logger.info(`Error code: ` + error.response.data.message.code);
+    try {
+      Logger.info(`[MintToken] Minting ${amount} tokens to ${mintTo}`);
 
-        if (
-          error.response.data.message.code === 'REPLACEMENT_UNDERPRICED' ||
-          error.response.data.message.code === 'UNPREDICTABLE_GAS_LIMIT' ||
-          error.response.data.message.code === 'INSUFFICIENT_FUNDS'
-        ) {
-          const keys = {
-            password: '',
-            address: mintTo,
-            amount
-          };
-          if (type === 'ngo') {
-            await QueueService.increaseGasForMinting(keys, message);
-          } else {
-            await QueueService.gasFundCampaignWithCrypto(keys, message);
-          }
+      const provider = new ethers.providers.JsonRpcProvider(process.env.RPC_URL);
+
+      const adminPrivateKey = process.env.ADMIN_PASS_TEST || process.env.ADMIN_PASS;
+      if (!adminPrivateKey) throw new Error('Admin private key is missing from .env');
+
+      const adminWallet = new ethers.Wallet(adminPrivateKey, provider);
+      const tokenContract = getTokenContract.connect(adminWallet);
+
+      const mintAmount = ethers.utils.parseUnits(amount.toString(), 6); // 6 decimals
+
+      // Optional: Estimate gas
+      const gasEstimate = await tokenContract.estimateGas.mint(mintAmount, mintTo).catch(() => null);
+
+      const tx = await tokenContract.mint(mintAmount, mintTo, {
+        gasLimit: gasEstimate || 500_000
+      });
+
+      const receipt = await tx.wait();
+
+      Logger.info(`[MintToken] Mint successful. TxHash: ${receipt.transactionHash}`);
+
+      return {
+        status: true,
+        Minted: receipt.transactionHash,
+        to: mintTo,
+        amount
+      };
+    } catch (error) {
+      Logger.error(`[MintToken] Mint failed: ${error.message}`);
+
+      const errorCode = error?.error?.code || error?.code || 'UNKNOWN_ERROR';
+      Logger.info(`[MintToken] Error code: ${errorCode}`);
+
+      // Gas recovery queue fallback
+      if (
+        errorCode === 'REPLACEMENT_UNDERPRICED' ||
+        errorCode === 'UNPREDICTABLE_GAS_LIMIT' ||
+        errorCode === 'INSUFFICIENT_FUNDS'
+      ) {
+        const keys = {
+          password: '',
+          address: mintTo,
+          amount
+        };
+
+        if (type === 'ngo') {
+          await QueueService.increaseGasForMinting(keys, message);
+        } else {
+          await QueueService.gasFundCampaignWithCrypto(keys, message);
         }
-        return reject(error);
       }
-    });
+
+      throw new Error(`[MintToken] Failed: ${errorCode}`);
+    }
   }
+
   static async redeem(senderpswd, amount, message, type) {
     return new Promise(async (resolve, reject) => {
       const mintTo = senderpswd;
@@ -595,12 +614,13 @@ class BlockchainService {
     });
   }
 
-  static async approveToSpend(ownerPassword, spenderAdd, amount) {
-    Logger.info(`Approving to spend: ${ownerPassword} ${spenderAdd} ${amount}`);
+  static async approveToSpend(ownerPrivateKey, spenderAdd, amount) {
+    Logger.info(`Approving to spend: ${ownerPrivateKey} ${spenderAdd} ${amount}`);
+  
     return new Promise(async (resolve, reject) => {
       try {
         Logger.info('🔐 Preparing wallet for approval...');
-        const wallet = new ethers.Wallet(ownerPassword, provider);
+        const wallet = new ethers.Wallet(ownerPrivateKey, provider);
   
         tokenConfig.abi = chatsABI;
   
@@ -609,20 +629,26 @@ class BlockchainService {
         }
   
         const contract = new ethers.Contract(tokenConfig.address, tokenConfig.abi, wallet);
-        const parsedAmount = ethers.utils.parseUnits(amount.toString(), 6); // 6 decimals assumed
+        const parsedAmount = ethers.utils.parseUnits(amount.toString(), 6); // CHATS = 6 decimals
   
         Logger.info("⛽ Estimating gas...");
         const estimatedGas = await contract.estimateGas.approve(spenderAdd, parsedAmount);
         Logger.info(`📏 Estimated Gas: ${estimatedGas.toString()}`);
   
+        // ✅ Fetch correct nonce from blockchain
+        const nonce = await provider.getTransactionCount(wallet.address, "latest");
+        Logger.info(`🔢 Using nonce: ${nonce}`);
+  
+        // 🚀 Send the transaction with nonce
         const tx = await contract.approve(spenderAdd, parsedAmount, {
-          gasLimit: estimatedGas.add(20000), // add a buffer
+          gasLimit: estimatedGas.add(20000),  // buffer
           gasPrice: ethers.utils.parseUnits("2", "gwei"), // adjust if needed
+          nonce: nonce                        // ✅ prevent nonce mismatch
         });
   
-        Logger.info('✅ Approve transaction sent:', tx.hash);
+        Logger.info(`✅ Approve transaction sent: ${tx.hash}`);
         const receipt = await tx.wait();
-        Logger.info('✅ Approve transaction mined:', receipt.transactionHash);
+        Logger.info(`✅ Approve transaction mined: ${receipt.transactionHash}`);
   
         resolve({ Approved: receipt.transactionHash });
       } catch (error) {
@@ -631,7 +657,6 @@ class BlockchainService {
       }
     });
   }
-
   static async disApproveToSpend(ownerPassword, spenderAdd, amount) {
     return new Promise(async (resolve, reject) => {
       try {

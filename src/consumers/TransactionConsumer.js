@@ -2151,116 +2151,162 @@ RabbitMq
         );
       });
       approveOneBeneficiary
-      .activateConsumer(async msg => {
-        Logger.info('🚀 [approveOneBeneficiary] Message received from queue');
-    
-        const content = msg.getContent();
-        Logger.info('📦 Queue Message Content:', JSON.stringify(content));
-    
-        const {
-          campaignPrivateKey,
-          BAddress,
-          amount,
-          wallet_uuid,
-          campaign,
-          beneficiary,
-          transactionId
-        } = content;
-    
-        const share = amount;
-        Logger.info('🧠 Calling BlockchainService.approveToSpend...');
-    
-        const { Approved } = await BlockchainService.approveToSpend(
-          campaignPrivateKey,
-          BAddress,
-          amount,
-          {
-            amount,
-            transactionId,
-            wallet_uuid,
-            campaign,
-            beneficiary,
-            share
-          },
-          'multiple'
-        );
-    
-        Logger.info(`✅ BlockchainService.approveToSpend result: ${Approved}`);
-        if (!Approved) {
-          Logger.error('❌ approveToSpend returned null or undefined!');
-          await BeneficiaryService.spendingStatus(
-            beneficiary.CampaignId,
-            beneficiary.UserId,
-            {
-              status: 'error'
-            }
-          );
-          msg.nack();
-          return;
-        }
-    
-        const find = await BeneficiaryService.spendingStatus(
-          beneficiary.CampaignId,
-          beneficiary.UserId,
-          {
-            status: 'processing'
-          }
-        );
-    
-        Logger.info(`📌 Updated status to processing: ${find.status}`);
-    
-        await QueueService.confirmOneBeneficiary(
-          Approved,
-          wallet_uuid,
-          transactionId,
-          beneficiary
-        );
-    
-        Logger.info(`🎯 QueueService.confirmOneBeneficiary sent with hash: ${Approved}`);
-        msg.ack(); // 👈 Add this
-      })
-      .catch(error => {
-        Logger.error(`RabbitMq Error: ${error}`);
-      })
-      .then(_ => {
-        Logger.info(`Running Process For Approving Single Beneficiary`);
-      });
-    
-    confirmOneBeneficiary
-      .activateConsumer(async msg => {
-        const {hash, uuid, transactionId, beneficiary} = msg.getContent();
-        const confirm = await BlockchainService.confirmTransaction(hash);
-        if (!confirm) {
-          msg.nack();
-          return;
-        }
-        await update_transaction(
-          {is_approved: true, transaction_hash: hash, status: 'success'},
-          transactionId
-        );
-        const status = await BeneficiaryService.spendingStatus(
-          beneficiary.CampaignId,
-          beneficiary.UserId,
-          {
-            approve_spending: true,
-            status: 'success'
-          }
-        );
-        // updating beneficiary
-        Logger.info(`Approve Spending Success: ${status.status}`);
-        await updateWasFunded(uuid);
-        Logger.info(`Approve Spending Success: ${status.status}`);
-      })
-      .catch(error => {
-        Logger.error(`RabbitMq Error: ${error}`);
-      })
+  .activateConsumer(async msg => {
+    Logger.info('🚀 [approveOneBeneficiary] Message received from queue');
 
-      .then(_ => {
-        Logger.info(
-          `Running Process For Confirming Approving Single Beneficiary`
-        );
-      });
-    deployEscrowCollection
+    const content = msg.getContent();
+    Logger.info('📦 Queue Message Content:', JSON.stringify(content, null, 2)); // 💡 Log incoming payload in readable format
+
+    const {
+      campaignPrivateKey,
+      BAddress,
+      amount,
+      wallet_uuid,
+      campaign,
+      beneficiary,
+      transactionId
+    } = content;
+
+    const share = amount;
+    Logger.info('🧠 Calling BlockchainService.approveToSpend...');
+
+    // 💡 INSERT LOG BEFORE CALL
+    Logger.info("🧪 Input to approveToSpend:", {
+      campaignPrivateKey,
+      BAddress,
+      amount,
+      wallet_uuid,
+      transactionId,
+    });
+
+    const { Approved } = await BlockchainService.approveToSpend(
+      campaignPrivateKey,
+      BAddress,
+      amount,
+      {
+        amount,
+        transactionId,
+        wallet_uuid,
+        campaign,
+        beneficiary,
+        share
+      },
+      'multiple'
+    );
+
+    // 💡 INSERT LOG AFTER CALL
+    Logger.info(`🧪 Output from approveToSpend:`, { Approved });
+
+    if (!Approved) {
+      Logger.error('❌ approveToSpend returned null or undefined!');
+      await BeneficiaryService.spendingStatus(
+        beneficiary.CampaignId,
+        beneficiary.UserId,
+        {
+          status: 'error'
+        }
+      );
+      msg.nack(); // 💥 Explicitly fail this message
+      return;
+    }
+
+    // 💡 INSERT LOG BEFORE SPENDING STATUS
+    Logger.info("🔁 Updating beneficiary status to 'processing'...");
+
+    const find = await BeneficiaryService.spendingStatus(
+      beneficiary.CampaignId,
+      beneficiary.UserId,
+      {
+        status: 'processing'
+      }
+    );
+
+    Logger.info(`📌 Updated status to processing:`, find?.status || "Not found");
+
+    // 💡 WRAP confirmOneBeneficiary IN TRY-CATCH
+    try {
+      Logger.info("📤 Calling QueueService.confirmOneBeneficiary...");
+      await QueueService.confirmOneBeneficiary(
+        Approved,
+        wallet_uuid,
+        transactionId,
+        beneficiary
+      );
+      Logger.info(`🎯 confirmOneBeneficiary sent with hash: ${Approved}`);
+    } catch (err) {
+      Logger.error("❌ Error in confirmOneBeneficiary:", err.message || err);
+      msg.nack(); // Fail the queue message so it can retry
+      return;
+    }
+
+    msg.ack(); // ✅ Successfully handled
+  })
+  .catch(error => {
+    Logger.error(`❌ RabbitMq Error: ${error.message || error}`);
+  })
+  .then(_ => {
+    Logger.info(`✅ Running Process For Approving Single Beneficiary`);
+  });
+
+  confirmOneBeneficiary
+  .activateConsumer(async msg => {
+    const { hash, uuid, transactionId, beneficiary } = msg.getContent();
+
+    Logger.info(`📥 Received confirmOneBeneficiary message with TX hash: ${hash}`);
+    Logger.info(`🧪 Verifying transaction on blockchain...`);
+
+    const confirm = await BlockchainService.confirmTransaction(hash);
+
+    if (!confirm) {
+      Logger.error("❌ Transaction not confirmed on-chain.");
+      msg.nack(); // Retry later
+      return;
+    }
+
+    Logger.info(`✅ Blockchain confirmed tx: ${hash}`);
+
+    try {
+      await update_transaction(
+        { is_approved: true, transaction_hash: hash, status: 'success' },
+        transactionId
+      );
+      Logger.info(`✅ DB transaction updated successfully. TX_ID: ${transactionId}`);
+    } catch (err) {
+      Logger.error(`❌ Error updating transaction in DB: ${err.message}`);
+    }
+
+    try {
+      const status = await BeneficiaryService.spendingStatus(
+        beneficiary.CampaignId,
+        beneficiary.UserId,
+        {
+          approve_spending: true,
+          status: 'success'
+        }
+      );
+      Logger.info(`✅ Beneficiary spending status updated: ${status.status}`);
+    } catch (err) {
+      Logger.error(`❌ Error updating beneficiary status: ${err.message}`);
+    }
+
+    try {
+      await updateWasFunded(uuid);
+      Logger.info(`✅ Wallet funding status set to TRUE for UUID: ${uuid}`);
+    } catch (err) {
+      Logger.error(`❌ Error updating wallet 'was_funded': ${err.message}`);
+    }
+
+    msg.ack(); // ✅ Acknowledge only if all goes well
+  })
+  .catch(error => {
+    Logger.error(`RabbitMq Error in confirmOneBeneficiary: ${error}`);
+  })
+  .then(() => {
+    Logger.info(`🟢 Running Process For Confirming Approving Single Beneficiary`);
+  });
+
+
+  deployEscrowCollection
       .activateConsumer(async msg => {
         const {collection} = msg.getContent();
         const newCollection = await BlockchainService.createEscrowCollection(

@@ -14,13 +14,14 @@ const { getTokenContract } = require(path.join(__dirname, '../../chats-blockchai
 const CampaignService = require(path.join(__dirname, '../src/services/CampaignService'));
 const { Campaign } = require('../src/models'); // ✅ correct path to your models/index.js
 const { Wallet } = require('../src/models');
+const Logger = require("../src/libs/Logger");
 
 /**
  * Fixed version following project conventions.
  */
 async function createCampaignWithWallet() {
     try {
-      const dummyOrgId = 1;
+      const dummyOrgId = 3;
   
       const newCampaign = {
         OrganisationId: dummyOrgId,
@@ -56,7 +57,7 @@ async function createCampaignWithWallet() {
 //                                                                                                                       //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-const CAMPAIGN_ID = 11;
+const CAMPAIGN_ID = 12;
 const USER_ID = 14;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -216,6 +217,106 @@ async function transferTokensToBeneficiaryAfterApproval() {
     }
 }
 
+
+async function testMintToken() {
+  try {
+    const WALLET_ADDRESS = '0xC13A147480B7Dc73764C23Ba74C0F64a5fDc77a1'; // ✅ Replace with actual
+    const AMOUNT = '50'; // CHATS tokens
+    const MESSAGE_UUID = 'test-mint-token-flow';
+    const TYPE = 'user'; // or 'user'
+
+    console.log(`🚀 Testing mintToken for address: ${WALLET_ADDRESS}`);
+    const result = await BlockchainService.mintToken(WALLET_ADDRESS, AMOUNT, MESSAGE_UUID, TYPE);
+    console.log("✅ Token minted successfully:");
+    console.log("✅ mintToken result:", JSON.stringify(result, null, 2));
+    console.log(result);
+  } catch (err) {
+    console.error("❌ Error while minting token:");
+    if (err?.response?.data) {
+      console.error(err.response.data);
+    } else {
+      console.error(err.message || err);
+    }
+  }
+}
+
+
+
+// Constants
+
+async function testFullMintFlow() {
+  try {
+    const WALLET_ADDRESS = "0xC13A147480B7Dc73764C23Ba74C0F64a5fDc77a1"; // ✅ Actual beneficiary wallet
+    const AMOUNT = "50"; // CHATS
+    const USER_ID = 14;
+    const CAMPAIGN_ID = 1;
+
+    const {
+      Beneficiary,
+      Wallet,
+      Transaction,
+    } = require("../src/models");
+
+    const BlockchainService = require("../src/services/BlockchainService");
+    const QueueService = require("../src/services/QueueService");
+    const CampaignService = require("../src/services/CampaignService");
+    const WalletService = require("../src/services/WalletService");
+    const BeneficiaryService = require("../src/services/BeneficiaryService");
+    const Logger = require("../src/libs/Logger");
+
+    Logger.info(`🚀 Starting full mintToken flow...`);
+
+    // 1️⃣ Approve beneficiary
+    await BeneficiaryService.updateCampaignBeneficiary(CAMPAIGN_ID, USER_ID, {
+      approved: true,
+      rejected: false
+    });
+
+    // 2️⃣ Fetch campaign, token, wallet, and beneficiary
+    const campaign = await CampaignService.getCampaignById(CAMPAIGN_ID);
+    const token = await BlockchainService.setUserKeypair(`campaign_${CAMPAIGN_ID}`);
+    const beneficiaryWallet = await WalletService.findUserCampaignWallet(USER_ID, CAMPAIGN_ID);
+    const beneficiary = await Beneficiary.findOne({ where: { UserId: USER_ID, CampaignId: CAMPAIGN_ID } });
+
+    if (!beneficiaryWallet || !beneficiary) throw new Error("❌ Wallet or Beneficiary not found");
+
+    // 3️⃣ Trigger approval (which will queue the blockchain mint flow)
+    await QueueService.approveOneBeneficiary(
+      token.privateKey,
+      beneficiaryWallet.address,
+      AMOUNT,
+      beneficiaryWallet.uuid,
+      campaign,
+      beneficiary
+    );
+
+    Logger.info("⏳ Waiting for queue + consumer + blockchain flow...");
+    await new Promise(resolve => setTimeout(resolve, 7000)); // allow async consumer to finish
+
+    // 4️⃣ Verify DB updates
+    const txn = await Transaction.findOne({
+      where: {
+        BeneficiaryId: USER_ID,
+        CampaignId: CAMPAIGN_ID,
+        transaction_type: 'approval',
+      },
+      order: [["createdAt", "DESC"]],
+    });
+    
+    const updatedWallet = await Wallet.findByPk(beneficiaryWallet.id);
+    const updatedBeneficiary = await Beneficiary.findByPk(beneficiary.id);
+
+    console.log("✅ Transaction Hash:", txn?.transaction_hash || "No txn found");
+    console.log("✅ Wallet was_funded:", updatedWallet?.was_funded);
+    console.log("✅ Beneficiary approved_spending:", updatedBeneficiary?.approve_spending);
+
+    Logger.info("🎉 Full Mint Flow Test Completed Successfully.");
+  } catch (err) {
+    console.error("❌ Full mint flow failed:", err.message || err);
+  }
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                                                       //
 //                                                    🧪 Run Tests                                                       //
@@ -230,4 +331,6 @@ async function transferTokensToBeneficiaryAfterApproval() {
 //addBeneficiaryToCampaign();
 //approveAndMint();
 
-transferTokensToBeneficiaryAfterApproval()
+//transferTokensToBeneficiaryAfterApproval()
+//testMintToken(); // <-- Call it here
+testFullMintFlow();

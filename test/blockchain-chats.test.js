@@ -382,7 +382,7 @@ async function testSnapshotBalances() {
 
 async function testMintToBeneficiary() {
   try {
-    const recipientAddress = "0xC13A147480B7Dc73764C23Ba74C0F64a5fDc77a1"; // beneficiary wallet
+    const recipientAddress = "0xF10788593dC0c7A75f61d94021dEe867E1b4eFDC"; // beneficiary wallet
     const mintAmount = 500 * (10 ** 6); // Minting 500 CHATS with 6 decimals
 
     const provider = new ethers.providers.JsonRpcProvider(process.env.RPC_URL);
@@ -414,7 +414,7 @@ async function checkBeneficiaryBalance() {
     const provider = new ethers.providers.JsonRpcProvider(process.env.RPC_URL);
     const chatsContract = getTokenContract.connect(provider);
 
-    const walletAddress = "0xC13A147480B7Dc73764C23Ba74C0F64a5fDc77a1";
+    const walletAddress = "0xF10788593dC0c7A75f61d94021dEe867E1b4eFDC";
     const balance = await chatsContract.balanceOf(walletAddress);
 
     console.log(`🔍 Balance of ${walletAddress}: ${ethers.utils.formatUnits(balance, 6)} CHATS`);
@@ -560,12 +560,12 @@ async function runTests() {
 
     ///benedficiery tests
     //await whitelistBeneficiary();
-   // await testMintToBeneficiary();
-    //await checkBeneficiaryBalance();
+    await testMintToBeneficiary();
+   await checkBeneficiaryBalance();
     // ✅ Run ETH balance check
     //await checkBeneficiaryEthBalance();
 
-    testMintToCampaignWallet();
+    //testMintToCampaignWallet();
 }
 
 runTests();
