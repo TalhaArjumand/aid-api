@@ -8,3 +8,4 @@ date,focus,case_file,note_file
 2025-05-07,"API repository/models/migrations and query fixes",tests/nonprod/ngo_api/cases/2025-05-07.json,docs/nonprod/ngo_api/daily/2025-05-07.md
 2025-05-08,"API consumers/queues/events integration",tests/nonprod/ngo_api/cases/2025-05-08.json,docs/nonprod/ngo_api/daily/2025-05-08.md
 2025-05-09,"API tests (unit/integration) + bug fixes",tests/nonprod/ngo_api/cases/2025-05-09.json,docs/nonprod/ngo_api/daily/2025-05-09.md
+2025-05-10,"API refactor/performance/security hardening",tests/nonprod/ngo_api/cases/2025-05-10.json,docs/nonprod/ngo_api/daily/2025-05-10.md
