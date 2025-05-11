@@ -16,6 +16,11 @@ const { Campaign } = require('../src/models'); // ✅ correct path to your model
 const { Wallet } = require('../src/models');
 const Logger = require("../src/libs/Logger");
 
+require("dotenv").config();
+
+const { setTimeout }  = require("timers/promises");
+const assert          = require("assert").strict;
+const { v4: uuidv4 }  = require("uuid");
 /**
  * Fixed version following project conventions.
  */
@@ -171,51 +176,149 @@ async function approveAndMint() {
 }
 
 
-async function transferTokensToBeneficiaryAfterApproval() {
-    try {
-      console.log(`🚀 Starting token transfer test for Campaign ID: ${CAMPAIGN_ID}, User ID: ${USER_ID}`);
-  
-      // ✅ Step 1: Fetch necessary data
-      const [campaign, beneficiaryWallet, beneficiary] = await Promise.all([
-        CampaignService.getCampaignById(CAMPAIGN_ID),
-        WalletService.findUserCampaignWallet(USER_ID, CAMPAIGN_ID),
-        BeneficiariesService.getApprovedBeneficiary(CAMPAIGN_ID, USER_ID) // ✅ FIXED HERE
-      ]);
-  
-      if (!campaign || !beneficiaryWallet || !beneficiary) {
-        console.error("❌ Required data missing (campaign / wallet / beneficiary).");
-        return;
-      }
-  
-      const amount = campaign.budget / 1; // Assuming single user test
-      const token_type = 'papertoken';    // Or 'smstoken'
-  
-      // ✅ Step 2: Create a mock Approved hash & transactionId
-      const fakeHash = '0xApprovedTransactionHash123';
-      const fakeTransactionId = 'tx-uuid-demo-123';
-  
-      // ✅ Step 3: Call sendBForConfirmation to mimic frontend triggering disbursement
-      await QueueService.sendBForConfirmation(
-        fakeHash,
-        amount,
-        fakeTransactionId,
-        beneficiaryWallet.uuid,
-        campaign,
-        beneficiary,
-        campaign.budget,
-        0, // lastIndex = 0 since we’re testing 1 user
-        token_type
-      );
-  
-      console.log(`✅ Token disbursement message sent to queue for User ${USER_ID}`);
-      console.log("⏳ Waiting for consumer to complete confirmation...");
-      await new Promise(resolve => setTimeout(resolve, 6000)); // Wait for consumer
-  
-    } catch (err) {
-      console.error("❌ Error in transfer test:", err.message);
-      console.error(err);
+/******************************************************************
+ * E2E – beneficiary spending confirmation (real transfer flow)
+ *  Uses:   SEND_EACH_BENEFICIARY_FOR_CONFIRMATION  →
+ *          CONFIRM_BENEFICIARY_FUNDING_BENEFICIARY consumer
+ ******************************************************************/
+
+
+async function transferTokensToBeneficiaryAfterApproval () {
+  /* ───── config ───── */
+  const CAMPAIGN_ID = 1;
+  const USER_ID     = 14;
+  const TIMEOUT_MS  = 60_000;
+  const TEST_AMOUNT = 37;      
+  /* ───── deps ───── */
+  const {
+    sequelize, Transaction, Wallet
+  }                       = require("../src/models");
+  const CampaignService   = require("../src/services/CampaignService");
+  const WalletService     = require("../src/services/WalletService");
+  const BeneficiaryService= require("../src/services/BeneficiaryService");
+  const QueueService      = require("../src/services/QueueService");
+  const { getTokenContract } = require("../../chats-blockchain/src/resources/web3config");
+  const Logger            = require("../src/libs/Logger");
+
+  try {
+    Logger.info("🚀  sendBForConfirmation E2E test …");
+
+    /* 1️⃣  Live rows (public columns only) */
+    const [
+      campaign,
+      beneficiaryWallet,
+      beneficiary,
+      campaignWalletPublic
+    ] = await Promise.all([
+      CampaignService.getCampaignById(CAMPAIGN_ID),
+      WalletService.findUserCampaignWallet(USER_ID, CAMPAIGN_ID),
+      BeneficiaryService.getApprovedBeneficiary(CAMPAIGN_ID, USER_ID),
+      WalletService.findOrganisationCampaignWallet(
+        /* OrgId = */ 1, CAMPAIGN_ID)
+    ]);
+
+    assert(campaign && beneficiaryWallet && beneficiary && campaignWalletPublic,
+           "Missing campaign / wallets / beneficiary");
+
+    /* ── OPTION 1: query *again* to fetch the secret field ── */
+    const campaignWallet = await Wallet.findOne({
+      where      : { uuid: campaignWalletPublic.uuid },
+      attributes : ['uuid','address','privateKey']        //  ← include PK
+    });
+    assert(campaignWallet?.privateKey, "campaignWallet.privateKey is missing");
+
+    /* 2️⃣  On-chain prep */
+    const provider   = new ethers.providers.JsonRpcProvider(process.env.RPC_URL);
+    const token      = getTokenContract.connect(provider);
+
+    const amountStr  = campaign.budget.toString();           // single-user test
+    const amountBN   = ethers.utils.parseUnits(amountStr, 6);
+
+    /* 3️⃣  Top-up campaign wallet if balance is low */
+    const campaignBal = await token.balanceOf(campaignWallet.address);
+    if (campaignBal.lt(amountBN)) {
+      const delta = amountBN.sub(campaignBal);
+
+      const adminPk  = process.env.ADMIN_PASS_TEST || process.env.ADMIN_PASS;
+      const admin    = new ethers.Wallet(adminPk, provider);
+      const tokenAdm = token.connect(admin);
+
+      Logger.info(`[test] Minting ${ethers.utils.formatUnits(delta,6)} CHATS → campaign wallet …`);
+      const txMint = await tokenAdm.mint(delta, campaignWallet.address);
+      await txMint.wait();
+      Logger.info(`[test] Minted; hash ${txMint.hash}`);
     }
+
+    /* 4️⃣  Transfer CHATS campaign → beneficiary */
+    const campaignSigner = new ethers.Wallet(campaignWallet.privateKey, provider);
+    const tokenCamp      = token.connect(campaignSigner);
+
+    Logger.info(`[test] Transferring ${amountStr} CHATS to beneficiary …`);
+    const txTransfer = await tokenCamp.transfer(
+      beneficiaryWallet.address, amountBN, { gasLimit: 300_000 });
+    await txTransfer.wait();
+    Logger.info(`[test] Transfer hash ${txTransfer.hash}`);
+
+    /* 5️⃣  Insert processing TX row */
+    const txModel = await Transaction.create({
+      uuid: uuidv4(),
+      amount: 37,
+      reference: Math.floor(Math.random()*1e10).toString(),
+      status: "processing",
+      is_approved: true,
+      transaction_type: "transfer",
+      transaction_origin: "wallet",
+      SenderWalletId: campaignWallet.uuid,
+      ReceiverWalletId: beneficiaryWallet.uuid,
+      BeneficiaryId: USER_ID,
+      OrganisationId: campaign.OrganisationId,
+      narration: "beneficiary spending"
+    });
+
+    /* 6️⃣  Push queue message with *real* on-chain hash */
+    await QueueService.sendBForConfirmation(
+      txTransfer.hash,
+      amountStr,
+      txModel.uuid,
+      beneficiaryWallet.uuid,
+      campaign,
+      beneficiary,
+      campaign.budget,
+      0,
+      "papertoken"
+    );
+
+    Logger.info("⏳  Waiting for consumer …");
+
+         const deadline = Date.now() + TIMEOUT_MS;
+         let txn;
+         while (Date.now() < deadline) {
+           txn = await Transaction.findOne({
+             where: { transaction_hash: txTransfer.hash }
+           });
+           if (txn?.status === "success") break;
+           await setTimeout(2_000);
+         }
+
+    /* 7️⃣  Assertions */
+         assert(txn, "TX row missing");
+         assert.strictEqual(txn.status, "success", "TX not success");
+
+    Logger.info("🎉  sendBForConfirmation E2E test PASSED");
+    Logger.info("     On-chain hash:", txn.transaction_hash);
+    process.exit(0);
+
+  } catch (err) {
+    Logger.error(`❌  sendBForConfirmation E2E test FAILED – ${err.message}`);
+    console.error(err);
+    process.exit(1);
+  } finally {
+    try { await sequelize?.close(); } catch (_) {}
+  }
 }
+
+/* export so the runner can call it */
+module.exports = { transferTokensToBeneficiaryAfterApproval };
 
 
 async function testMintToken() {
@@ -242,79 +345,124 @@ async function testMintToken() {
 
 
 
-// Constants
 
-async function testFullMintFlow() {
+// tests/fundBeneficiary.e2e.js
+// Run with:  node tests/fundBeneficiary.e2e.js
+
+/* -------------------------------------------------------------
+ * End-to-end test for the FUND_BENEFICIARY queue-based flow
+ * -------------------------------------------------------------
+ * - Publishes a message
+ * - Waits for the consumer to finish
+ * - Asserts Transaction row + wallet balance
+ * ----------------------------------------------------------- */
+
+
+
+async function testFundBeneficiaryFlow () {
+  /* ─────────── config ─────────── */
+  const AMOUNT      = "26";
+  const USER_ID     = 14;
+  const CAMPAIGN_ID = 1;
+  const TIMEOUT_MS  = 15_000;
+
+  /* ─────────── deps ─────────── */
+  const {
+    sequelize,
+    Beneficiary,
+    Wallet,
+    Transaction,
+  } = require("../src/models");
+
+  const BlockchainService = require("../src/services/BlockchainService");
+  const QueueService      = require("../src/services/QueueService");
+  const CampaignService   = require("../src/services/CampaignService");
+  const WalletService     = require("../src/services/WalletService");
+  const Logger            = require("../src/libs/Logger");
+
   try {
-    const WALLET_ADDRESS = "0xC13A147480B7Dc73764C23Ba74C0F64a5fDc77a1"; // ✅ Actual beneficiary wallet
-    const AMOUNT = "50"; // CHATS
-    const USER_ID = 14;
-    const CAMPAIGN_ID = 1;
+    Logger.info("🚀  Starting FundBeneficiary E2E test …");
 
-    const {
-      Beneficiary,
-      Wallet,
-      Transaction,
-    } = require("../src/models");
-
-    const BlockchainService = require("../src/services/BlockchainService");
-    const QueueService = require("../src/services/QueueService");
-    const CampaignService = require("../src/services/CampaignService");
-    const WalletService = require("../src/services/WalletService");
-    const BeneficiaryService = require("../src/services/BeneficiaryService");
-    const Logger = require("../src/libs/Logger");
-
-    Logger.info(`🚀 Starting full mintToken flow...`);
-
-    // 1️⃣ Approve beneficiary
-    await BeneficiaryService.updateCampaignBeneficiary(CAMPAIGN_ID, USER_ID, {
-      approved: true,
-      rejected: false
-    });
-
-    // 2️⃣ Fetch campaign, token, wallet, and beneficiary
+    /* 1️⃣  Load entities */
     const campaign = await CampaignService.getCampaignById(CAMPAIGN_ID);
-    const token = await BlockchainService.setUserKeypair(`campaign_${CAMPAIGN_ID}`);
-    const beneficiaryWallet = await WalletService.findUserCampaignWallet(USER_ID, CAMPAIGN_ID);
-    const beneficiary = await Beneficiary.findOne({ where: { UserId: USER_ID, CampaignId: CAMPAIGN_ID } });
+    assert(campaign, "Campaign not found");
 
-    if (!beneficiaryWallet || !beneficiary) throw new Error("❌ Wallet or Beneficiary not found");
-
-    // 3️⃣ Trigger approval (which will queue the blockchain mint flow)
-    await QueueService.approveOneBeneficiary(
-      token.privateKey,
-      beneficiaryWallet.address,
-      AMOUNT,
-      beneficiaryWallet.uuid,
-      campaign,
-      beneficiary
+    const senderWallet = await WalletService.findOrganisationCampaignWallet(
+      campaign.OrganisationId, CAMPAIGN_ID
     );
-
-    Logger.info("⏳ Waiting for queue + consumer + blockchain flow...");
-    await new Promise(resolve => setTimeout(resolve, 7000)); // allow async consumer to finish
-
-    // 4️⃣ Verify DB updates
-    const txn = await Transaction.findOne({
-      where: {
-        BeneficiaryId: USER_ID,
-        CampaignId: CAMPAIGN_ID,
-        transaction_type: 'approval',
-      },
-      order: [["createdAt", "DESC"]],
+    const beneficiary  = await Beneficiary.findOne({
+      where: { UserId: USER_ID, CampaignId: CAMPAIGN_ID },
     });
-    
-    const updatedWallet = await Wallet.findByPk(beneficiaryWallet.id);
-    const updatedBeneficiary = await Beneficiary.findByPk(beneficiary.id);
+    const beneficiaryWallet = await WalletService.findUserCampaignWallet(
+      USER_ID, CAMPAIGN_ID
+    );
+    assert(senderWallet && beneficiary && beneficiaryWallet,
+      "Missing sender / beneficiary / wallet");
 
-    console.log("✅ Transaction Hash:", txn?.transaction_hash || "No txn found");
-    console.log("✅ Wallet was_funded:", updatedWallet?.was_funded);
-    console.log("✅ Beneficiary approved_spending:", updatedBeneficiary?.approve_spending);
+    /* 2️⃣  Plain payload */
+    const payload = {
+      beneficiaryWallet : beneficiaryWallet.get({ plain: true }),
+      campaignWallet    : senderWallet    .get({ plain: true }),
+      task_assignment   : { id: 1, campaign_id: CAMPAIGN_ID, beneficiary_id: USER_ID },
+      amount_disburse   : AMOUNT,
+    };
 
-    Logger.info("🎉 Full Mint Flow Test Completed Successfully.");
+    /* 3️⃣  Prepare key-pair */
+    await BlockchainService.setUserKeypair(`campaign_${CAMPAIGN_ID}`);
+
+    /* 4️⃣  Push onto queue & keep TX uuid */
+    const txCreated = await QueueService.FundBeneficiary(
+      payload.beneficiaryWallet,
+      payload.campaignWallet,
+      payload.task_assignment,
+      payload.amount_disburse
+    );
+    const txUuid = txCreated.uuid;
+
+    Logger.info("⏳  Waiting for consumer …");
+
+    /* 5️⃣  Poll until consumer updates DB */
+    const deadline = Date.now() + TIMEOUT_MS;
+    let txn, updatedWallet;
+
+    while (Date.now() < deadline) {
+      [txn, updatedWallet] = await Promise.all([
+        Transaction.findByPk(txUuid),                       //  ← by primary key
+        Wallet.findOne({ where: { uuid: beneficiaryWallet.uuid } }) //  ← fixed
+      ]);
+
+      if (txn && txn.status === "success" &&
+          updatedWallet && Number(updatedWallet.balance) >= Number(AMOUNT)) {
+        break;
+      }
+      await setTimeout(2_000);
+    }
+
+    /* 6️⃣  Assertions */
+    assert(txn, "Transaction row not found");
+    assert.strictEqual(txn.status, "success", "Transaction not successful");
+    assert(updatedWallet, "Beneficiary wallet not found");
+    assert(Number(updatedWallet.balance) >= Number(AMOUNT),
+           "Beneficiary balance not updated");
+
+    Logger.info("✅ Row loaded:", JSON.stringify(txn.get({ plain: true }), null, 2));
+    Logger.info(`✅ Disbursement TX hash: ${txn.transaction_hash}`);
+    Logger.info(`✅ New beneficiary balance: ${updatedWallet.balance}`);
+    Logger.info("🎉 FUND_BENEFICIARY E2E test PASSED");
+    process.exit(0);
+
   } catch (err) {
-    console.error("❌ Full mint flow failed:", err.message || err);
+    Logger.error(`❌ FUND_BENEFICIARY E2E test FAILED – ${err.message}`);
+    console.error(err);
+    process.exit(1);
+  } finally {
+    try { await sequelize?.close(); } catch (_) {}
   }
 }
+
+
+
+
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -326,11 +474,18 @@ async function testFullMintFlow() {
 
 
 
-//createCampaignWithWallet();
+//testMintToken(); // <-- Call it here
 // 🧪 Run this test now
+
+//
+//    Imp
+//
+//createCampaignWithWallet();
 //addBeneficiaryToCampaign();
 //approveAndMint();
 
-//transferTokensToBeneficiaryAfterApproval()
-//testMintToken(); // <-- Call it here
-testFullMintFlow();
+//
+//     V.Imp
+//
+//transferTokensToBeneficiaryAfterApproval();
+//testFundBeneficiaryFlow() ;

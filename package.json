@@ -15,7 +15,8 @@
     "db:migrate:undo:all": "npx sequelize-cli db:migrate:undo:all",
     "db:seed:all": "npx sequelize-cli db:seed:all",
     "db:seed:undo:all": "npx sequelize-cli db:seed:undo:all",
-    "migration:gen": "npx sequelize-cli migration:generate --name"
+    "migration:gen": "npx sequelize-cli migration:generate --name",
+    "test:one": "mocha --timeout 10000"
   },
   "engines": {
     "node": "^14.x"
@@ -93,6 +94,8 @@
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "chai": "^4.5.0",
+    "dotenv-cli": "^8.0.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-jsx-a11y": "^6.3.1",
@@ -100,7 +103,8 @@
     "eslint-plugin-prettier": "^3.1.4",
     "eslint-plugin-react": "^7.20.6",
     "eslint-plugin-react-hooks": "^4.1.2",
-    "mocha": "^10.2.0",
-    "sequelize-cli": "^6.6.2"
+    "mocha": "^10.8.2",
+    "sequelize-cli": "^6.6.2",
+    "sinon": "^20.0.0"
   }
 }
