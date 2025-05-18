@@ -16,3 +16,4 @@ date,focus,case_file,note_file
 2025-05-15,"API consumers/queues/events integration",tests/nonprod/ngo_api/cases/2025-05-15.json,docs/nonprod/ngo_api/daily/2025-05-15.md
 2025-05-16,"API tests (unit/integration) + bug fixes",tests/nonprod/ngo_api/cases/2025-05-16.json,docs/nonprod/ngo_api/daily/2025-05-16.md
 2025-05-17,"API refactor/performance/security hardening",tests/nonprod/ngo_api/cases/2025-05-17.json,docs/nonprod/ngo_api/daily/2025-05-17.md
+2025-05-18,"API docs/config/chore and release notes",tests/nonprod/ngo_api/cases/2025-05-18.json,docs/nonprod/ngo_api/daily/2025-05-18.md
