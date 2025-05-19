@@ -1,0 +1,11 @@
+{
+  "date": "2025-05-19",
+  "pair": "ngo+api",
+  "focus": "API controllers/routes for current flow",
+  "repo": "aid-api",
+  "tasks": {
+    "validation": "schema and consistency checks for nonprod fixtures",
+    "sync": "ensure NGO/API alignment artifacts are present for this day",
+    "safety": "no runtime code updates"
+  }
+}
