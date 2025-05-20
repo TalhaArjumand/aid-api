@@ -1,0 +1,11 @@
+{
+  "date": "2025-05-20",
+  "pair": "ngo+api",
+  "focus": "API services + middleware validation/auth",
+  "repo": "aid-api",
+  "tasks": {
+    "validation": "schema and consistency checks for nonprod fixtures",
+    "sync": "ensure NGO/API alignment artifacts are present for this day",
+    "safety": "no runtime code updates"
+  }
+}
