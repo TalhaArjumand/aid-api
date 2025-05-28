@@ -26,3 +26,4 @@ date,focus,case_file,note_file
 2025-05-25,"API docs/config/chore and release notes",tests/nonprod/ngo_api/cases/2025-05-25.json,docs/nonprod/ngo_api/daily/2025-05-25.md
 2025-05-26,"API controllers/routes for current flow",tests/nonprod/ngo_api/cases/2025-05-26.json,docs/nonprod/ngo_api/daily/2025-05-26.md
 2025-05-27,"API services + middleware validation/auth",tests/nonprod/ngo_api/cases/2025-05-27.json,docs/nonprod/ngo_api/daily/2025-05-27.md
+2025-05-28,"API repository/models/migrations and query fixes",tests/nonprod/ngo_api/cases/2025-05-28.json,docs/nonprod/ngo_api/daily/2025-05-28.md
