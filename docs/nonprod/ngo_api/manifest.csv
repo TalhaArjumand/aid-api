@@ -43,3 +43,4 @@ date,focus,case_file,note_file
 2025-06-11,"API repository/models/migrations and query fixes",tests/nonprod/ngo_api/cases/2025-06-11.json,docs/nonprod/ngo_api/daily/2025-06-11.md
 2025-06-12,"API consumers/queues/events integration",tests/nonprod/ngo_api/cases/2025-06-12.json,docs/nonprod/ngo_api/daily/2025-06-12.md
 2025-06-13,"API tests (unit/integration) + bug fixes",tests/nonprod/ngo_api/cases/2025-06-13.json,docs/nonprod/ngo_api/daily/2025-06-13.md
+2025-06-14,"API refactor/performance/security hardening",tests/nonprod/ngo_api/cases/2025-06-14.json,docs/nonprod/ngo_api/daily/2025-06-14.md
