@@ -45,3 +45,4 @@ date,focus,case_file,note_file
 2025-06-13,"API tests (unit/integration) + bug fixes",tests/nonprod/ngo_api/cases/2025-06-13.json,docs/nonprod/ngo_api/daily/2025-06-13.md
 2025-06-14,"API refactor/performance/security hardening",tests/nonprod/ngo_api/cases/2025-06-14.json,docs/nonprod/ngo_api/daily/2025-06-14.md
 2025-06-15,"API docs/config/chore and release notes",tests/nonprod/ngo_api/cases/2025-06-15.json,docs/nonprod/ngo_api/daily/2025-06-15.md
+2025-06-16,"API controllers/routes for current flow",tests/nonprod/ngo_api/cases/2025-06-16.json,docs/nonprod/ngo_api/daily/2025-06-16.md
