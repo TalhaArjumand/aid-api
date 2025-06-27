@@ -56,3 +56,4 @@ date,focus,case_file,note_file
 2025-06-24,"API services + middleware validation/auth",tests/nonprod/ngo_api/cases/2025-06-24.json,docs/nonprod/ngo_api/daily/2025-06-24.md
 2025-06-25,"API repository/models/migrations and query fixes",tests/nonprod/ngo_api/cases/2025-06-25.json,docs/nonprod/ngo_api/daily/2025-06-25.md
 2025-06-26,"API consumers/queues/events integration",tests/nonprod/ngo_api/cases/2025-06-26.json,docs/nonprod/ngo_api/daily/2025-06-26.md
+2025-06-27,"API tests (unit/integration) + bug fixes",tests/nonprod/ngo_api/cases/2025-06-27.json,docs/nonprod/ngo_api/daily/2025-06-27.md
