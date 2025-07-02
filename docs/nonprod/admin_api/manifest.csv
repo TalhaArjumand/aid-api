@@ -1,2 +1,3 @@
 date,focus,case_file,note_file
 2025-07-01,"API services + middleware validation/auth",tests/nonprod/admin_api/cases/2025-07-01.json,docs/nonprod/admin_api/daily/2025-07-01.md
+2025-07-02,"API repository/models/migrations and query fixes",tests/nonprod/admin_api/cases/2025-07-02.json,docs/nonprod/admin_api/daily/2025-07-02.md
