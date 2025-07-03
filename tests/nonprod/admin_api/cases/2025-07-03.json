@@ -1,0 +1,11 @@
+{
+  "date": "2025-07-03",
+  "pair": "admin+api",
+  "focus": "API consumers/queues/events integration",
+  "repo": "aid-api",
+  "operations": [
+    "generate daily fixture",
+    "append manifest record",
+    "keep runtime source untouched"
+  ]
+}
