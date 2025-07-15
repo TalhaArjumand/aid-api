@@ -13,3 +13,4 @@ date,focus,case_file,note_file
 2025-07-12,"API refactor/performance/security hardening",tests/nonprod/admin_api/cases/2025-07-12.json,docs/nonprod/admin_api/daily/2025-07-12.md
 2025-07-13,"API docs/config/chore and release notes",tests/nonprod/admin_api/cases/2025-07-13.json,docs/nonprod/admin_api/daily/2025-07-13.md
 2025-07-14,"API controllers/routes for current flow",tests/nonprod/admin_api/cases/2025-07-14.json,docs/nonprod/admin_api/daily/2025-07-14.md
+2025-07-15,"API services + middleware validation/auth",tests/nonprod/admin_api/cases/2025-07-15.json,docs/nonprod/admin_api/daily/2025-07-15.md
