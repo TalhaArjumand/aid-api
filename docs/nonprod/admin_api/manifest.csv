@@ -32,3 +32,4 @@ date,focus,case_file,note_file
 2025-07-31,"API consumers/queues/events integration",tests/nonprod/admin_api/cases/2025-07-31.json,docs/nonprod/admin_api/daily/2025-07-31.md
 2025-08-01,"API tests (unit/integration) + bug fixes",tests/nonprod/admin_api/cases/2025-08-01.json,docs/nonprod/admin_api/daily/2025-08-01.md
 2025-08-02,"API refactor/performance/security hardening",tests/nonprod/admin_api/cases/2025-08-02.json,docs/nonprod/admin_api/daily/2025-08-02.md
+2025-08-03,"API docs/config/chore and release notes",tests/nonprod/admin_api/cases/2025-08-03.json,docs/nonprod/admin_api/daily/2025-08-03.md
