@@ -1,0 +1,11 @@
+{
+  "date": "2025-08-06",
+  "pair": "admin+api",
+  "focus": "API repository/models/migrations and query fixes",
+  "repo": "aid-api",
+  "operations": [
+    "generate daily fixture",
+    "append manifest record",
+    "keep runtime source untouched"
+  ]
+}
