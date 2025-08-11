@@ -40,3 +40,4 @@ date,focus,case_file,note_file
 2025-08-08,"API tests (unit/integration) + bug fixes",tests/nonprod/admin_api/cases/2025-08-08.json,docs/nonprod/admin_api/daily/2025-08-08.md
 2025-08-09,"API refactor/performance/security hardening",tests/nonprod/admin_api/cases/2025-08-09.json,docs/nonprod/admin_api/daily/2025-08-09.md
 2025-08-10,"API docs/config/chore and release notes",tests/nonprod/admin_api/cases/2025-08-10.json,docs/nonprod/admin_api/daily/2025-08-10.md
+2025-08-11,"API controllers/routes for current flow",tests/nonprod/admin_api/cases/2025-08-11.json,docs/nonprod/admin_api/daily/2025-08-11.md
