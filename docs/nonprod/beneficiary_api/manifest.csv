@@ -3,3 +3,4 @@ date,focus,case_file,note_file
 2025-09-02,"API services + middleware validation/auth",tests/nonprod/beneficiary_api/cases/2025-09-02.json,docs/nonprod/beneficiary_api/daily/2025-09-02.md
 2025-09-03,"API repository/models/migrations and query fixes",tests/nonprod/beneficiary_api/cases/2025-09-03.json,docs/nonprod/beneficiary_api/daily/2025-09-03.md
 2025-09-04,"API consumers/queues/events integration",tests/nonprod/beneficiary_api/cases/2025-09-04.json,docs/nonprod/beneficiary_api/daily/2025-09-04.md
+2025-09-05,"API tests (unit/integration) + bug fixes",tests/nonprod/beneficiary_api/cases/2025-09-05.json,docs/nonprod/beneficiary_api/daily/2025-09-05.md
