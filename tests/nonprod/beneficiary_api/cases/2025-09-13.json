@@ -1,0 +1,11 @@
+{
+  "date": "2025-09-13",
+  "pair": "beneficiary+api",
+  "focus": "API refactor/performance/security hardening",
+  "repo": "aid-api",
+  "checks": [
+    "daily fixture exists and parses",
+    "manifest row is appended once",
+    "non-production files only"
+  ]
+}
