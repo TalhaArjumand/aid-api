@@ -1,0 +1,11 @@
+{
+  "date": "2025-09-14",
+  "pair": "beneficiary+api",
+  "focus": "API docs/config/chore and release notes",
+  "repo": "aid-api",
+  "checks": [
+    "daily fixture exists and parses",
+    "manifest row is appended once",
+    "non-production files only"
+  ]
+}
