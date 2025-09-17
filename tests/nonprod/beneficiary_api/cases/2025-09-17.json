@@ -1,0 +1,11 @@
+{
+  "date": "2025-09-17",
+  "pair": "beneficiary+api",
+  "focus": "API repository/models/migrations and query fixes",
+  "repo": "aid-api",
+  "checks": [
+    "daily fixture exists and parses",
+    "manifest row is appended once",
+    "non-production files only"
+  ]
+}
