@@ -19,3 +19,4 @@ date,focus,case_file,note_file
 2025-09-18,"API consumers/queues/events integration",tests/nonprod/beneficiary_api/cases/2025-09-18.json,docs/nonprod/beneficiary_api/daily/2025-09-18.md
 2025-09-19,"API tests (unit/integration) + bug fixes",tests/nonprod/beneficiary_api/cases/2025-09-19.json,docs/nonprod/beneficiary_api/daily/2025-09-19.md
 2025-09-20,"API refactor/performance/security hardening",tests/nonprod/beneficiary_api/cases/2025-09-20.json,docs/nonprod/beneficiary_api/daily/2025-09-20.md
+2025-09-21,"API docs/config/chore and release notes",tests/nonprod/beneficiary_api/cases/2025-09-21.json,docs/nonprod/beneficiary_api/daily/2025-09-21.md
