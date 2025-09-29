@@ -27,3 +27,4 @@ date,focus,case_file,note_file
 2025-09-26,"API tests (unit/integration) + bug fixes",tests/nonprod/beneficiary_api/cases/2025-09-26.json,docs/nonprod/beneficiary_api/daily/2025-09-26.md
 2025-09-27,"API refactor/performance/security hardening",tests/nonprod/beneficiary_api/cases/2025-09-27.json,docs/nonprod/beneficiary_api/daily/2025-09-27.md
 2025-09-28,"API docs/config/chore and release notes",tests/nonprod/beneficiary_api/cases/2025-09-28.json,docs/nonprod/beneficiary_api/daily/2025-09-28.md
+2025-09-29,"API controllers/routes for current flow",tests/nonprod/beneficiary_api/cases/2025-09-29.json,docs/nonprod/beneficiary_api/daily/2025-09-29.md
