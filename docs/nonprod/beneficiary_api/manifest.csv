@@ -39,3 +39,4 @@ date,focus,case_file,note_file
 2025-10-08,"API repository/models/migrations and query fixes",tests/nonprod/beneficiary_api/cases/2025-10-08.json,docs/nonprod/beneficiary_api/daily/2025-10-08.md
 2025-10-09,"API consumers/queues/events integration",tests/nonprod/beneficiary_api/cases/2025-10-09.json,docs/nonprod/beneficiary_api/daily/2025-10-09.md
 2025-10-10,"API tests (unit/integration) + bug fixes",tests/nonprod/beneficiary_api/cases/2025-10-10.json,docs/nonprod/beneficiary_api/daily/2025-10-10.md
+2025-10-11,"API refactor/performance/security hardening",tests/nonprod/beneficiary_api/cases/2025-10-11.json,docs/nonprod/beneficiary_api/daily/2025-10-11.md
