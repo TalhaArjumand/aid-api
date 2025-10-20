@@ -48,3 +48,4 @@ date,focus,case_file,note_file
 2025-10-17,"API tests (unit/integration) + bug fixes",tests/nonprod/beneficiary_api/cases/2025-10-17.json,docs/nonprod/beneficiary_api/daily/2025-10-17.md
 2025-10-18,"API refactor/performance/security hardening",tests/nonprod/beneficiary_api/cases/2025-10-18.json,docs/nonprod/beneficiary_api/daily/2025-10-18.md
 2025-10-19,"API docs/config/chore and release notes",tests/nonprod/beneficiary_api/cases/2025-10-19.json,docs/nonprod/beneficiary_api/daily/2025-10-19.md
+2025-10-20,"API controllers/routes for current flow",tests/nonprod/beneficiary_api/cases/2025-10-20.json,docs/nonprod/beneficiary_api/daily/2025-10-20.md
