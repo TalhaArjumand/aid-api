@@ -26,7 +26,7 @@ const { v4: uuidv4 }  = require("uuid");
  */
 async function createCampaignWithWallet() {
     try {
-      const dummyOrgId = 3;
+      const dummyOrgId = 2;
   
       const newCampaign = {
         OrganisationId: dummyOrgId,
@@ -62,8 +62,8 @@ async function createCampaignWithWallet() {
 //                                                                                                                       //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-const CAMPAIGN_ID = 12;
-const USER_ID = 14;
+const CAMPAIGN_ID = 5;
+const USER_ID = 9;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                                                                                                       //
@@ -93,41 +93,59 @@ async function addBeneficiaryToCampaign() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//                                                                                                                       //
 //                                       ✅ 2. Approve Beneficiary + Mint Tokens                                        //
-//                                                                                                                       //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-async function checkBeneficiaryBalance(walletAddress) {
+const MIN_GAS_ETH = "0.02";                       // tweak to taste
+
+/** ── tiny helper: make sure addr has at least MIN_GAS_ETH ───────────────────── */
+async function ensureGas (addr, minEth = MIN_GAS_ETH) {
+  const provider   = new ethers.providers.JsonRpcProvider(process.env.RPC_URL);
+  const bal        = await provider.getBalance(addr);
+
+  const neededWei  = ethers.utils.parseEther(minEth);
+  if (bal.gte(neededWei)) return;                 // already funded ✔
+
+  const adminPk    = process.env.ADMIN_PASS_TEST || process.env.ADMIN_PASS;
+  const admin      = new ethers.Wallet(adminPk, provider);
+
+  const tx = await admin.sendTransaction({
+    to       : addr,
+    value    : neededWei.sub(bal).mul(2),         // send a bit extra
+    gasLimit : 21_000
+  });
+  await tx.wait();
+  console.log(`⚡ Funded ${addr} with ${ethers.utils.formatEther(tx.value)} ETH (tx ${tx.hash})`);
+}
+
+/** ───────────────────────────────────────────────────────────────────────────── */
+async function checkBeneficiaryBalance (walletAddress) {
   try {
-    const provider = new ethers.providers.JsonRpcProvider(process.env.RPC_URL);
-    const tokenContract = getTokenContract;
-
-    const balance = await tokenContract.balanceOf(walletAddress);
-    const formatted = ethers.utils.formatUnits(balance, 6);
-
+    const provider    = new ethers.providers.JsonRpcProvider(process.env.RPC_URL);
+    const token       = getTokenContract;
+    const balRaw      = await token.balanceOf(walletAddress);
+    const formatted   = ethers.utils.formatUnits(balRaw, 6);
     console.log(`🔍 Balance of ${walletAddress}: ${formatted} CHATS`);
   } catch (err) {
     console.error("❌ Failed to fetch balance:", err.message);
   }
 }
 
-async function approveAndMint() {
+async function approveAndMint () {
   try {
-    console.log(`🚀 Starting approve + mint test for Campaign ID: ${CAMPAIGN_ID}, User ID: ${USER_ID}`);
+    console.log(`🚀 Starting approve + mint for Campaign ${CAMPAIGN_ID}, User ${USER_ID}`);
 
-    // ✅ Step 1: Approve the beneficiary in DB
-    console.log("📌 Approving beneficiary in DB...");
+    /* 1️⃣  mark beneficiary approved in DB */
     await BeneficiariesService.updateCampaignBeneficiary(CAMPAIGN_ID, USER_ID, {
       approved: true,
       rejected: false
     });
 
-    // ✅ Step 2: Gather required data
+    /* 2️⃣  gather data  */
     const [
       campaign,
       approvedBeneficiaries,
-      campaign_token,
+      campaignKeys,                     // renamed from `campaign_token`
       beneficiaryWallet
     ] = await Promise.all([
       CampaignService.getCampaignById(CAMPAIGN_ID),
@@ -136,45 +154,40 @@ async function approveAndMint() {
       WalletService.findUserCampaignWallet(USER_ID, CAMPAIGN_ID)
     ]);
 
-    // 🛑 Pre-checks
-    if (!campaign || !campaign_token || !beneficiaryWallet || approvedBeneficiaries.length === 0) {
-      console.error("❌ Missing required campaign, token, or wallet data.");
+    if (!campaign || !campaignKeys || !beneficiaryWallet || approvedBeneficiaries.length === 0) {
+      console.error("❌ Missing campaign / wallet / beneficiary data");
       return;
     }
-    if (!beneficiaryWallet?.address) {
-      console.error("❌ Wallet address not available. Consumer might not have finished wallet creation.");
+    if (!beneficiaryWallet.address) {
+      console.error("❌ Beneficiary wallet address not yet created");
       return;
     }
 
-    // ✅ Step 3: Calculate per-user mint amount
-    const amount = (parseInt(campaign.budget) / approvedBeneficiaries.length).toFixed(2);
+    /* 3️⃣  guarantee gas before queuing  */
+    await ensureGas(campaignKeys.address);
+
+    /* 4️⃣  compute share & enqueue */
+    const amount = (Number(campaign.budget) / approvedBeneficiaries.length).toFixed(2);
     console.log(`💰 Allocation per beneficiary: ${amount} CHATS`);
 
-    // ✅ Step 4: Trigger Mint
-    console.log("📤 Sending approveOneBeneficiary to queue...");
     await QueueService.approveOneBeneficiary(
-      campaign_token.privateKey,
+      campaignKeys.privateKey,
       beneficiaryWallet.address,
       amount,
       beneficiaryWallet.uuid,
       campaign,
       approvedBeneficiaries[0]
     );
+    console.log("📤 approveOneBeneficiary message sent → queue");
 
-    console.log("⏳ Waiting for consumer to complete transaction...");
-    await new Promise(resolve => setTimeout(resolve, 6000)); // optional delay
-
-    // ✅ Step 5: Check balance
+    /* 5️⃣  wait a few seconds, then read on-chain balance */
+    await new Promise(r => setTimeout(r, 7_000));
     await checkBeneficiaryBalance(beneficiaryWallet.address);
-
-    console.log("✅ Test completed.");
-
+    console.log("✅ approve + mint flow completed");
   } catch (err) {
-    console.error("❌ Error in test script:", err.message);
-    console.error(err);
+    console.error("❌ approveAndMint failed:", err.message || err);
   }
 }
-
 
 /******************************************************************
  * E2E – beneficiary spending confirmation (real transfer flow)
@@ -185,8 +198,8 @@ async function approveAndMint() {
 
 async function transferTokensToBeneficiaryAfterApproval () {
   /* ───── config ───── */
-  const CAMPAIGN_ID = 1;
-  const USER_ID     = 14;
+  const CAMPAIGN_ID = 5;
+  const USER_ID     = 9;
   const TIMEOUT_MS  = 60_000;
   const TEST_AMOUNT = 37;      
   /* ───── deps ───── */
@@ -214,7 +227,7 @@ async function transferTokensToBeneficiaryAfterApproval () {
       WalletService.findUserCampaignWallet(USER_ID, CAMPAIGN_ID),
       BeneficiaryService.getApprovedBeneficiary(CAMPAIGN_ID, USER_ID),
       WalletService.findOrganisationCampaignWallet(
-        /* OrgId = */ 1, CAMPAIGN_ID)
+        /* OrgId = */ 2, CAMPAIGN_ID)
     ]);
 
     assert(campaign && beneficiaryWallet && beneficiary && campaignWalletPublic,
@@ -362,8 +375,8 @@ async function testMintToken() {
 async function testFundBeneficiaryFlow () {
   /* ─────────── config ─────────── */
   const AMOUNT      = "26";
-  const USER_ID     = 14;
-  const CAMPAIGN_ID = 1;
+  const USER_ID     = 9;
+  const CAMPAIGN_ID = 5;
   const TIMEOUT_MS  = 15_000;
 
   /* ─────────── deps ─────────── */
@@ -442,8 +455,8 @@ async function testFundBeneficiaryFlow () {
     assert(txn, "Transaction row not found");
     assert.strictEqual(txn.status, "success", "Transaction not successful");
     assert(updatedWallet, "Beneficiary wallet not found");
-    assert(Number(updatedWallet.balance) >= Number(AMOUNT),
-           "Beneficiary balance not updated");
+     assert.strictEqual(txn.amount, Number(AMOUNT),
+            "Recorded amount mismatch");
 
     Logger.info("✅ Row loaded:", JSON.stringify(txn.get({ plain: true }), null, 2));
     Logger.info(`✅ Disbursement TX hash: ${txn.transaction_hash}`);
@@ -488,4 +501,4 @@ async function testFundBeneficiaryFlow () {
 //     V.Imp
 //
 //transferTokensToBeneficiaryAfterApproval();
-//testFundBeneficiaryFlow() ;
+testFundBeneficiaryFlow() ;

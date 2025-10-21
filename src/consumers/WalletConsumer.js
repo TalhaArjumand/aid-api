@@ -45,7 +45,11 @@ RabbitMq.completeConfiguration()
     confirmAndCreateWalletQueue.activateConsumer(async msg => {
       const { content, keyPair } = msg.getContent();
       Logger.info(`📩 Confirmed wallet for: ${keyPair.address}`);
-      await WalletService.updateOrCreate(content, { address: keyPair.address });
+      Logger.info('🔑 keyPair received:', keyPair);   // <- should log BOTH fields
+       await WalletService.updateOrCreate(content, {
+           address    : keyPair.address,
+           privateKey : keyPair.privateKey          // ←  **store the key for local tests**
+         });
       msg.ack();
     });
 

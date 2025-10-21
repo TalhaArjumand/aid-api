@@ -1,22 +1,34 @@
 const axios = require('axios');
 const dotenv = require('dotenv');
-const {Response} = require('../libs');
-const {HttpStatusCode} = require('../utils');
+const { Response } = require('../libs');
+const { HttpStatusCode } = require('../utils');
+
 dotenv.config();
+
+const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET_KEY || '';
+const RECAPTCHA_DISABLED = process.env.RECAPTCHA_DISABLED === 'true';
+
 const Axios = axios.create();
+
 const IsRecaptchaVerified = async (req, res, next) => {
   try {
-    const {token} = req.body;
-    const secrete_key = process.env.RECAPTCHA_SECRET_KEY;
+    // Bypass when disabled or not configured (dev)
+    if (RECAPTCHA_DISABLED || !RECAPTCHA_SECRET) return next();
 
-    const {data} = await Axios.post(
-      `https://www.google.com/recaptcha/api/siteverify?secret=${secrete_key}&response=${token}`
+    const { token } = req.body;
+    if (!token) {
+      Response.setError(HttpStatusCode.STATUS_BAD_REQUEST, 'Missing reCAPTCHA token.');
+      return Response.send(res);
+    }
+
+    const { data } = await Axios.post(
+      'https://www.google.com/recaptcha/api/siteverify',
+      null,
+      { params: { secret: RECAPTCHA_SECRET, response: token } }
     );
-    if (!data.success) {
-      Response.setError(
-        HttpStatusCode.STATUS_FORBIDDEN,
-        'Error verifying recaptcha.'
-      );
+
+    if (!data?.success) {
+      Response.setError(HttpStatusCode.STATUS_FORBIDDEN, 'Error verifying reCAPTCHA.');
       return Response.send(res);
     }
 
@@ -30,6 +42,4 @@ const IsRecaptchaVerified = async (req, res, next) => {
   }
 };
 
-module.exports = {
-  IsRecaptchaVerified
-};
+module.exports = { IsRecaptchaVerified };

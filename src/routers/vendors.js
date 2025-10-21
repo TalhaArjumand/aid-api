@@ -138,6 +138,9 @@ router
 
 router.route('/orders/:id/pay').post();
 
+// ✅ NEW: Scan & Pay from uploaded QR code
+router.post('/orders/scan-pay', BeneficiaryAuth, OrderController.scanPay);
+
 router.get('/me', VendorAuth, VendorController.getVendor);
 
 router.get('/:id', Auth, VendorController.getVendor);

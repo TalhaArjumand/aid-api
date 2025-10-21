@@ -1,0 +1,3328 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 14.17 (Homebrew)
+-- Dumped by pg_dump version 14.17 (Homebrew)
+
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: enum_Beneficiaries_source; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public."enum_Beneficiaries_source" AS ENUM (
+    'beneficiary app',
+    'field app',
+    'web app'
+);
+
+
+ALTER TYPE public."enum_Beneficiaries_source" OWNER TO postgres;
+
+--
+-- Name: enum_Beneficiaries_status; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public."enum_Beneficiaries_status" AS ENUM (
+    'pending',
+    'in_progress',
+    'processing',
+    'success',
+    'error'
+);
+
+
+ALTER TYPE public."enum_Beneficiaries_status" OWNER TO postgres;
+
+--
+-- Name: enum_Campaigns_fund_status; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public."enum_Campaigns_fund_status" AS ENUM (
+    'pending',
+    'in_progress',
+    'processing',
+    'success',
+    'error'
+);
+
+
+ALTER TYPE public."enum_Campaigns_fund_status" OWNER TO postgres;
+
+--
+-- Name: enum_Campaigns_status; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public."enum_Campaigns_status" AS ENUM (
+    'pending',
+    'ongoing',
+    'active',
+    'paused',
+    'completed',
+    'ended'
+);
+
+
+ALTER TYPE public."enum_Campaigns_status" OWNER TO postgres;
+
+--
+-- Name: enum_Campaigns_type; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public."enum_Campaigns_type" AS ENUM (
+    'campaign',
+    'cash-for-work'
+);
+
+
+ALTER TYPE public."enum_Campaigns_type" OWNER TO postgres;
+
+--
+-- Name: enum_Complaints_status; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public."enum_Complaints_status" AS ENUM (
+    'resolved',
+    'unresolved'
+);
+
+
+ALTER TYPE public."enum_Complaints_status" OWNER TO postgres;
+
+--
+-- Name: enum_FundAccounts_status; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public."enum_FundAccounts_status" AS ENUM (
+    'processing',
+    'successful',
+    'declined'
+);
+
+
+ALTER TYPE public."enum_FundAccounts_status" OWNER TO postgres;
+
+--
+-- Name: enum_Groups_group_category; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public."enum_Groups_group_category" AS ENUM (
+    'family',
+    'community',
+    'interest-group',
+    'associations'
+);
+
+
+ALTER TYPE public."enum_Groups_group_category" OWNER TO postgres;
+
+--
+-- Name: enum_Livenesses_marital_status; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public."enum_Livenesses_marital_status" AS ENUM (
+    'single',
+    'married',
+    'divorced'
+);
+
+
+ALTER TYPE public."enum_Livenesses_marital_status" OWNER TO postgres;
+
+--
+-- Name: enum_Orders_status; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public."enum_Orders_status" AS ENUM (
+    'pending',
+    'processing',
+    'confirmed',
+    'delivered',
+    'failed'
+);
+
+
+ALTER TYPE public."enum_Orders_status" OWNER TO postgres;
+
+--
+-- Name: enum_OrganisationMembers_role; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public."enum_OrganisationMembers_role" AS ENUM (
+    'admin',
+    'member'
+);
+
+
+ALTER TYPE public."enum_OrganisationMembers_role" OWNER TO postgres;
+
+--
+-- Name: enum_Organisations_verificationMode; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public."enum_Organisations_verificationMode" AS ENUM (
+    '1',
+    '2'
+);
+
+
+ALTER TYPE public."enum_Organisations_verificationMode" OWNER TO postgres;
+
+--
+-- Name: enum_Plans_beneficiaries_onboarding; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public."enum_Plans_beneficiaries_onboarding" AS ENUM (
+    'FIELD AGENTS',
+    'SELF ONBOARDING'
+);
+
+
+ALTER TYPE public."enum_Plans_beneficiaries_onboarding" OWNER TO postgres;
+
+--
+-- Name: enum_Products_type; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public."enum_Products_type" AS ENUM (
+    'product',
+    'service',
+    'item'
+);
+
+
+ALTER TYPE public."enum_Products_type" OWNER TO postgres;
+
+--
+-- Name: enum_RequestFunds_status; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public."enum_RequestFunds_status" AS ENUM (
+    'Pending',
+    'Approved',
+    'Rejected'
+);
+
+
+ALTER TYPE public."enum_RequestFunds_status" OWNER TO postgres;
+
+--
+-- Name: enum_TaskAssignmentEvidences_source; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public."enum_TaskAssignmentEvidences_source" AS ENUM (
+    'beneficiary',
+    'field_agent',
+    'vendor'
+);
+
+
+ALTER TYPE public."enum_TaskAssignmentEvidences_source" OWNER TO postgres;
+
+--
+-- Name: enum_TaskAssignmentEvidences_type; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public."enum_TaskAssignmentEvidences_type" AS ENUM (
+    'image',
+    'video'
+);
+
+
+ALTER TYPE public."enum_TaskAssignmentEvidences_type" OWNER TO postgres;
+
+--
+-- Name: enum_TaskAssignments_status; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public."enum_TaskAssignments_status" AS ENUM (
+    'pending',
+    'in progress',
+    'rejected',
+    'disbursed',
+    'approved',
+    'completed'
+);
+
+
+ALTER TYPE public."enum_TaskAssignments_status" OWNER TO postgres;
+
+--
+-- Name: enum_TaskUsers_type; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public."enum_TaskUsers_type" AS ENUM (
+    'supervisor',
+    'worker'
+);
+
+
+ALTER TYPE public."enum_TaskUsers_type" OWNER TO postgres;
+
+--
+-- Name: enum_Tasks_status; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public."enum_Tasks_status" AS ENUM (
+    'fulfilled',
+    'pending'
+);
+
+
+ALTER TYPE public."enum_Tasks_status" OWNER TO postgres;
+
+--
+-- Name: enum_Transactions_status; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public."enum_Transactions_status" AS ENUM (
+    'success',
+    'processing',
+    'declined',
+    'failed'
+);
+
+
+ALTER TYPE public."enum_Transactions_status" OWNER TO postgres;
+
+--
+-- Name: enum_Transactions_transaction_origin; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public."enum_Transactions_transaction_origin" AS ENUM (
+    'store',
+    'wallet'
+);
+
+
+ALTER TYPE public."enum_Transactions_transaction_origin" OWNER TO postgres;
+
+--
+-- Name: enum_Transactions_transaction_type; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public."enum_Transactions_transaction_type" AS ENUM (
+    'deposit',
+    'withdrawal',
+    'transfer',
+    'approval',
+    'spent'
+);
+
+
+ALTER TYPE public."enum_Transactions_transaction_type" OWNER TO postgres;
+
+--
+-- Name: enum_Users_registration_type; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public."enum_Users_registration_type" AS ENUM (
+    'individual',
+    'organisation'
+);
+
+
+ALTER TYPE public."enum_Users_registration_type" OWNER TO postgres;
+
+--
+-- Name: enum_Users_status; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public."enum_Users_status" AS ENUM (
+    'suspended',
+    'activated',
+    'pending'
+);
+
+
+ALTER TYPE public."enum_Users_status" OWNER TO postgres;
+
+--
+-- Name: enum_Users_tfa_method; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public."enum_Users_tfa_method" AS ENUM (
+    'qrCode',
+    'email',
+    'sms'
+);
+
+
+ALTER TYPE public."enum_Users_tfa_method" OWNER TO postgres;
+
+--
+-- Name: enum_VendorProposals_status; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public."enum_VendorProposals_status" AS ENUM (
+    'pending',
+    'approved',
+    'rejected'
+);
+
+
+ALTER TYPE public."enum_VendorProposals_status" OWNER TO postgres;
+
+--
+-- Name: enum_VoucherTokens_tokenType; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public."enum_VoucherTokens_tokenType" AS ENUM (
+    'smstoken',
+    'papertoken'
+);
+
+
+ALTER TYPE public."enum_VoucherTokens_tokenType" OWNER TO postgres;
+
+--
+-- Name: enum_Wallets_wallet_type; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public."enum_Wallets_wallet_type" AS ENUM (
+    'user',
+    'organisation'
+);
+
+
+ALTER TYPE public."enum_Wallets_wallet_type" OWNER TO postgres;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: BankAccounts; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."BankAccounts" (
+    id integer NOT NULL,
+    "UserId" integer NOT NULL,
+    account_number character varying(255) NOT NULL,
+    bank_name character varying(255) NOT NULL,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    account_name character varying(255),
+    bank_code character varying(255),
+    recipient_code character varying(255),
+    type character varying(255),
+    uuid uuid
+);
+
+
+--."BankAccounts" OWNER TO postgres;
+
+--
+-- Name: Accounts_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+--."Accounts_id_seq" OWNER TO postgres;
+
+--
+-- Name: Accounts_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."Accounts_id_seq" OWNED BY public."BankAccounts".id;
+
+
+--
+-- Name: AssociatedCampaigns; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."AssociatedCampaigns" (
+    id integer NOT NULL,
+    "DonorId" integer NOT NULL,
+    "CampaignId" integer,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    uuid uuid
+);
+
+
+--."AssociatedCampaigns" OWNER TO postgres;
+
+--
+-- Name: AssociatedCampaigns_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+--."AssociatedCampaigns_id_seq" OWNER TO postgres;
+
+--
+-- Name: AssociatedCampaigns_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."AssociatedCampaigns_id_seq" OWNED BY public."AssociatedCampaigns".id;
+
+
+--
+-- Name: Beneficiaries; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."Beneficiaries" (
+    id integer NOT NULL,
+    "UserId" integer NOT NULL,
+    "CampaignId" integer NOT NULL,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    approved boolean DEFAULT false,
+    source public."enum_Beneficiaries_source",
+    rejected boolean DEFAULT false,
+    approve_spending boolean DEFAULT false,
+    status public."enum_Beneficiaries_status" DEFAULT 'pending'::public."enum_Beneficiaries_status",
+    uuid uuid
+);
+
+
+--."Beneficiaries" OWNER TO postgres;
+
+--
+-- Name: Beneficiaries_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+--."Beneficiaries_id_seq" OWNER TO postgres;
+
+--
+-- Name: Beneficiaries_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."Beneficiaries_id_seq" OWNED BY public."Beneficiaries".id;
+
+
+--
+-- Name: Businesses; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."Businesses" (
+    id integer NOT NULL,
+    name character varying(255),
+    "bizId" character varying(255),
+    document character varying(255),
+    "vendorId" integer NOT NULL,
+    "accountId" integer NOT NULL,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    uuid uuid
+);
+
+
+--."Businesses" OWNER TO postgres;
+
+--
+-- Name: Businesses_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+
+--."Businesses_id_seq" OWNER TO postgres;
+
+--
+-- Name: Businesses_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."Businesses_id_seq" OWNED BY public."Businesses".id;
+
+
+--
+-- Name: CampaignForms; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."CampaignForms" (
+    id integer NOT NULL,
+    title character varying(255) NOT NULL,
+    questions json NOT NULL,
+    "organisationId" integer NOT NULL,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    "beneficiaryId" integer,
+    uuid uuid
+);
+
+
+--."CampaignForms" OWNER TO postgres;
+
+--
+-- Name: CampaignForms_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+
+--."CampaignForms_id_seq" OWNER TO postgres;
+
+--
+-- Name: CampaignForms_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."CampaignForms_id_seq" OWNED BY public."CampaignForms".id;
+
+
+--
+-- Name: CampaignHistories; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."CampaignHistories" (
+    id integer NOT NULL,
+    extension_period integer NOT NULL,
+    new_end_date timestamp with time zone NOT NULL,
+    additional_budget integer DEFAULT 0,
+    beneficiaries integer DEFAULT 0,
+    campaign_id integer NOT NULL,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    uuid uuid
+);
+
+
+--."CampaignHistories" OWNER TO postgres;
+
+--
+-- Name: CampaignHistories_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+--."CampaignHistories_id_seq" OWNER TO postgres;
+
+--
+-- Name: CampaignHistories_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."CampaignHistories_id_seq" OWNED BY public."CampaignHistories".id;
+
+
+--
+-- Name: CampaignImpactReports; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."CampaignImpactReports" (
+    id integer NOT NULL,
+    title character varying(255),
+    "CampaignId" integer NOT NULL,
+    "AgentId" integer NOT NULL,
+    "MediaLink" character varying(255),
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    uuid uuid
+);
+
+
+--."CampaignImpactReports" OWNER TO postgres;
+
+--
+-- Name: CampaignImpactReports_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+--."CampaignImpactReports_id_seq" OWNER TO postgres;
+
+--
+-- Name: CampaignImpactReports_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."CampaignImpactReports_id_seq" OWNED BY public."CampaignImpactReports".id;
+
+
+--
+-- Name: CampaignVendors; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."CampaignVendors" (
+    id integer NOT NULL,
+    "VendorId" integer NOT NULL,
+    "CampaignId" integer NOT NULL,
+    approved boolean DEFAULT true,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    uuid uuid
+);
+
+
+--."CampaignVendors" OWNER TO postgres;
+
+--
+-- Name: CampaignVendors_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+
+
+--."CampaignVendors_id_seq" OWNER TO postgres;
+
+--
+-- Name: CampaignVendors_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."CampaignVendors_id_seq" OWNED BY public."CampaignVendors".id;
+
+
+--
+-- Name: Campaigns; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."Campaigns" (
+    id integer NOT NULL,
+    title character varying(255),
+    spending character varying(255) DEFAULT 'all'::character varying NOT NULL,
+    description text,
+    budget double precision DEFAULT '0'::double precision,
+    start_date timestamp with time zone,
+    end_date timestamp with time zone,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    is_funded boolean DEFAULT false,
+    "OrganisationId" integer,
+    funded_with character varying(255),
+    amount_disbursed double precision DEFAULT '0'::double precision,
+    is_processing boolean DEFAULT true,
+    status public."enum_Campaigns_status" DEFAULT 'pending'::public."enum_Campaigns_status",
+    paused_date timestamp with time zone,
+    is_public boolean DEFAULT false,
+    type public."enum_Campaigns_type" DEFAULT 'campaign'::public."enum_Campaigns_type",
+    minting_limit integer DEFAULT 0,
+    "contractIndex" integer,
+    collection_hash character varying(255),
+    escrow_hash character varying(255),
+    unit_cost double precision DEFAULT '0'::double precision,
+    location json,
+    "formId" integer,
+    category_id integer,
+    total_imported integer DEFAULT 0,
+    total_beneficiaries integer DEFAULT 0,
+    fund_status public."enum_Campaigns_fund_status" DEFAULT 'pending'::public."enum_Campaigns_fund_status",
+    uuid uuid
+);
+
+
+--."Campaigns" OWNER TO postgres;
+
+--
+-- Name: Campaigns_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+
+--."Campaigns_id_seq" OWNER TO postgres;
+
+--
+-- Name: Campaigns_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."Campaigns_id_seq" OWNED BY public."Campaigns".id;
+
+
+--
+-- Name: Complaints; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."Complaints" (
+    id integer NOT NULL,
+    report text,
+    status public."enum_Complaints_status" DEFAULT 'unresolved'::public."enum_Complaints_status" NOT NULL,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    "CampaignId" integer NOT NULL,
+    "UserId" integer NOT NULL,
+    uuid uuid
+);
+
+
+--."Complaints" OWNER TO postgres;
+
+--
+-- Name: Complaints_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+--."Complaints_id_seq" OWNER TO postgres;
+
+--
+-- Name: Complaints_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."Complaints_id_seq" OWNED BY public."Complaints".id;
+
+
+--
+-- Name: FingerPrints; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."FingerPrints" (
+    id integer NOT NULL,
+    "UserId" integer NOT NULL,
+    url character varying(255) NOT NULL,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    uuid uuid
+);
+
+
+--."FingerPrints" OWNER TO postgres;
+
+--
+-- Name: FingerPrints_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+--."FingerPrints_id_seq" OWNER TO postgres;
+
+--
+-- Name: FingerPrints_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."FingerPrints_id_seq" OWNED BY public."FingerPrints".id;
+
+
+--
+-- Name: FormAnswers; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."FormAnswers" (
+    id integer NOT NULL,
+    "formId" integer,
+    "beneficiaryId" integer,
+    questions json,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    "campaignId" integer,
+    uuid uuid
+);
+
+
+--."FormAnswers" OWNER TO postgres;
+
+--
+-- Name: FormAnswers_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+
+--."FormAnswers_id_seq" OWNER TO postgres;
+
+--
+-- Name: FormAnswers_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."FormAnswers_id_seq" OWNED BY public."FormAnswers".id;
+
+
+--
+-- Name: FundAccounts; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."FundAccounts" (
+    id integer NOT NULL,
+    channel character varying(255),
+    "OrganisationId" integer NOT NULL,
+    amount character varying(255),
+    "transactionReference" character varying(255),
+    status public."enum_FundAccounts_status" DEFAULT 'processing'::public."enum_FundAccounts_status",
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    service character varying(255),
+    approved boolean DEFAULT false,
+    "UserId" integer,
+    "CampaignId" integer,
+    uuid uuid
+);
+
+
+--."FundAccounts" OWNER TO postgres;
+
+--
+-- Name: FundAccounts_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+
+--."FundAccounts_id_seq" OWNER TO postgres;
+
+--
+-- Name: FundAccounts_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."FundAccounts_id_seq" OWNED BY public."FundAccounts".id;
+
+
+--
+-- Name: Groups; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."Groups" (
+    id integer NOT NULL,
+    group_name character varying(255) NOT NULL,
+    group_category public."enum_Groups_group_category" NOT NULL,
+    representative_id integer NOT NULL,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    uuid uuid
+);
+
+
+--."Groups" OWNER TO postgres;
+
+--
+-- Name: Groups_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+--."Groups_id_seq" OWNER TO postgres;
+
+--
+-- Name: Groups_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."Groups_id_seq" OWNED BY public."Groups".id;
+
+
+--
+-- Name: ImpactReports; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."ImpactReports" (
+    id integer NOT NULL,
+    title character varying(255),
+    "CampaignId" integer NOT NULL,
+    "AgentId" integer NOT NULL,
+    "MediaLink" character varying(255),
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL
+);
+
+
+--."ImpactReports" OWNER TO postgres;
+
+--
+-- Name: ImpactReports_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+
+--."ImpactReports_id_seq" OWNER TO postgres;
+
+--
+-- Name: ImpactReports_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."ImpactReports_id_seq" OWNED BY public."ImpactReports".id;
+
+
+--
+-- Name: Invites; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."Invites" (
+    id uuid NOT NULL,
+    email character varying(255),
+    "inviterId" integer,
+    token character varying(255),
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    "CampaignId" integer,
+    "isAdded" boolean DEFAULT false,
+    uuid uuid
+);
+
+
+--."Invites" OWNER TO postgres;
+
+--
+-- Name: Livenesses; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."Livenesses" (
+    id integer NOT NULL,
+    first_name character varying(255),
+    surname character varying(255),
+    email character varying(255),
+    liveness_capture character varying(255),
+    nin_photo_url character varying(255),
+    phone character varying(255),
+    marital_status public."enum_Livenesses_marital_status",
+    dob timestamp with time zone,
+    authorized_by integer,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    uuid uuid
+);
+
+
+--."Livenesses" OWNER TO postgres;
+
+--
+-- Name: Livenesses_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+--."Livenesses_id_seq" OWNER TO postgres;
+
+--
+-- Name: Livenesses_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."Livenesses_id_seq" OWNED BY public."Livenesses".id;
+
+
+--
+-- Name: Markets; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."Markets" (
+    id integer NOT NULL,
+    "UserId" integer NOT NULL,
+    store_name character varying(255),
+    address character varying(255),
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    location json,
+    category_id integer,
+    website_url character varying(255),
+    uuid uuid
+);
+
+
+--."Markets" OWNER TO postgres;
+
+--
+-- Name: Markets_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+
+--."Markets_id_seq" OWNER TO postgres;
+
+--
+-- Name: Markets_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."Markets_id_seq" OWNED BY public."Markets".id;
+
+
+--
+-- Name: Members; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."Members" (
+    id integer NOT NULL,
+    full_name character varying(255) NOT NULL,
+    dob timestamp with time zone NOT NULL,
+    profile_pic character varying(255),
+    group_id integer NOT NULL,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    uuid uuid
+);
+
+
+--."Members" OWNER TO postgres;
+
+--
+-- Name: Members_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+--."Members_id_seq" OWNER TO postgres;
+
+--
+-- Name: Members_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."Members_id_seq" OWNED BY public."Members".id;
+
+
+--
+-- Name: OneTimePasswords; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."OneTimePasswords" (
+    ref uuid NOT NULL,
+    "UserId" integer NOT NULL,
+    token character varying(255),
+    request_ip character varying(255),
+    expires_at timestamp with time zone,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    uuid uuid
+);
+
+
+--."OneTimePasswords" OWNER TO postgres;
+
+--
+-- Name: OrderProducts; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."OrderProducts" (
+    id integer NOT NULL,
+    "OrderId" integer NOT NULL,
+    "ProductId" integer NOT NULL,
+    quantity integer NOT NULL,
+    unit_price double precision NOT NULL,
+    total_amount double precision NOT NULL,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    uuid uuid
+);
+
+
+--."OrderProducts" OWNER TO postgres;
+
+--
+-- Name: OrderProducts_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+
+--."OrderProducts_id_seq" OWNER TO postgres;
+
+--
+-- Name: OrderProducts_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."OrderProducts_id_seq" OWNED BY public."OrderProducts".id;
+
+
+--
+-- Name: Orders; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."Orders" (
+    id integer NOT NULL,
+    status public."enum_Orders_status" DEFAULT 'pending'::public."enum_Orders_status" NOT NULL,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    reference character varying(255) NOT NULL,
+    "VendorId" integer NOT NULL,
+    "CampaignId" integer,
+    uuid uuid
+);
+
+
+--."Orders" OWNER TO postgres;
+
+--
+-- Name: Orders_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+
+--."Orders_id_seq" OWNER TO postgres;
+
+--
+-- Name: Orders_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."Orders_id_seq" OWNED BY public."Orders".id;
+
+
+--
+-- Name: OrganisationMembers; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."OrganisationMembers" (
+    id integer NOT NULL,
+    "UserId" integer NOT NULL,
+    "OrganisationId" integer NOT NULL,
+    role character varying(255) DEFAULT 'member'::public."enum_OrganisationMembers_role",
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    uuid uuid
+);
+
+
+--."OrganisationMembers" OWNER TO postgres;
+
+--
+-- Name: OrganisationMembers_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+
+--."OrganisationMembers_id_seq" OWNER TO postgres;
+
+--
+-- Name: OrganisationMembers_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."OrganisationMembers_id_seq" OWNED BY public."OrganisationMembers".id;
+
+
+--
+-- Name: Organisations; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."Organisations" (
+    id integer NOT NULL,
+    email character varying(255),
+    phone character varying(255),
+    address character varying(255),
+    state character varying(255),
+    country character varying(255),
+    logo_link character varying(255),
+    registration_id character varying(255),
+    year_of_inception character varying(255),
+    is_verified boolean DEFAULT false,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    profile_completed boolean DEFAULT false,
+    about character varying(255),
+    name character varying(255),
+    website_url character varying(255),
+    uuid uuid
+);
+
+
+--."Organisations" OWNER TO postgres;
+
+--
+-- Name: Organisations_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+
+--."Organisations_id_seq" OWNER TO postgres;
+
+--
+-- Name: Organisations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."Organisations_id_seq" OWNED BY public."Organisations".id;
+
+
+--
+-- Name: Plans; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."Plans" (
+    id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    conditional_voucher_number integer NOT NULL,
+    is_unlimited_conditional_voucher boolean DEFAULT false,
+    beneficiaries_number integer NOT NULL,
+    is_unlimited_beneficiaries boolean DEFAULT false,
+    plan_cost double precision DEFAULT '0'::double precision NOT NULL,
+    campaign_cost_cap double precision NOT NULL,
+    is_unlimited_campaign_cost boolean DEFAULT false,
+    unconditional_voucher_number integer DEFAULT 0,
+    is_unlimited_unconditional_voucher boolean DEFAULT false,
+    beneficiaries_onboarding public."enum_Plans_beneficiaries_onboarding",
+    features json NOT NULL,
+    "isActive" boolean,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    uuid uuid
+);
+
+
+--."Plans" OWNER TO postgres;
+
+--
+-- Name: Plans_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+--."Plans_id_seq" OWNER TO postgres;
+
+--
+-- Name: Plans_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."Plans_id_seq" OWNED BY public."Plans".id;
+
+
+--
+-- Name: ProductBeneficiaries; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."ProductBeneficiaries" (
+    id integer NOT NULL,
+    "productId" integer NOT NULL,
+    "UserId" integer NOT NULL,
+    "OrganisationId" integer NOT NULL,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    uuid uuid
+);
+
+
+--."ProductBeneficiaries" OWNER TO postgres;
+
+--
+-- Name: ProductBeneficiaries_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+--."ProductBeneficiaries_id_seq" OWNER TO postgres;
+
+--
+-- Name: ProductBeneficiaries_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."ProductBeneficiaries_id_seq" OWNED BY public."ProductBeneficiaries".id;
+
+
+--
+-- Name: ProductCategories; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."ProductCategories" (
+    id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    description text,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    organisation_id integer,
+    uuid uuid
+);
+
+
+--."ProductCategories" OWNER TO postgres;
+
+--
+-- Name: ProductCategories_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+
+--."ProductCategories_id_seq" OWNER TO postgres;
+
+--
+-- Name: ProductCategories_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."ProductCategories_id_seq" OWNED BY public."ProductCategories".id;
+
+
+--
+-- Name: Products; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."Products" (
+    id integer NOT NULL,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    type public."enum_Products_type",
+    tag character varying(255),
+    cost double precision,
+    product_ref character varying(255),
+    product_category character varying(255),
+    category_id integer,
+    quantity integer DEFAULT 0,
+    proposal_id integer,
+    "CampaignId" integer,
+    vendor_proposal_id integer,
+    uuid uuid
+);
+
+
+--."Products" OWNER TO postgres;
+
+--
+-- Name: Products_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+
+--."Products_id_seq" OWNER TO postgres;
+
+--
+-- Name: Products_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."Products_id_seq" OWNED BY public."Products".id;
+
+
+--
+-- Name: ProposalRequests; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."ProposalRequests" (
+    id integer NOT NULL,
+    campaign_id integer NOT NULL,
+    organisation_id integer NOT NULL,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    category_id integer,
+    uuid uuid
+);
+
+
+--."ProposalRequests" OWNER TO postgres;
+
+--
+-- Name: ProposalRequests_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+
+--."ProposalRequests_id_seq" OWNER TO postgres;
+
+--
+-- Name: ProposalRequests_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."ProposalRequests_id_seq" OWNED BY public."ProposalRequests".id;
+
+
+--
+-- Name: RequestFunds; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."RequestFunds" (
+    id integer NOT NULL,
+    donor_organisation_id integer NOT NULL,
+    campaign_id integer NOT NULL,
+    admin_id integer,
+    reason character varying(255) NOT NULL,
+    status public."enum_RequestFunds_status" DEFAULT 'Pending'::public."enum_RequestFunds_status" NOT NULL,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    uuid uuid
+);
+
+
+--."RequestFunds" OWNER TO postgres;
+
+--
+-- Name: RequestFunds_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+--."RequestFunds_id_seq" OWNER TO postgres;
+
+--
+-- Name: RequestFunds_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."RequestFunds_id_seq" OWNED BY public."RequestFunds".id;
+
+
+--
+-- Name: Roles; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."Roles" (
+    id integer NOT NULL,
+    name character varying(255),
+    description character varying(255),
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    uuid uuid
+);
+
+
+--."Roles" OWNER TO postgres;
+
+--
+-- Name: Roles_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+
+--."Roles_id_seq" OWNER TO postgres;
+
+--
+-- Name: Roles_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."Roles_id_seq" OWNED BY public."Roles".id;
+
+
+--
+-- Name: SequelizeMeta; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."SequelizeMeta" (
+    name character varying(255) NOT NULL
+);
+
+
+--."SequelizeMeta" OWNER TO postgres;
+
+--
+-- Name: StoreTransactions; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."StoreTransactions" (
+    id integer NOT NULL,
+    reference character varying(255) NOT NULL,
+    amount double precision,
+    "WalletTxId" uuid,
+    "OrderId" integer NOT NULL,
+    "VendorId" integer NOT NULL,
+    "BeneficiaryId" integer NOT NULL,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL
+);
+
+
+--."StoreTransactions" OWNER TO postgres;
+
+--
+-- Name: StoreTransactions_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+
+--."StoreTransactions_id_seq" OWNER TO postgres;
+
+--
+-- Name: StoreTransactions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."StoreTransactions_id_seq" OWNED BY public."StoreTransactions".id;
+
+
+--
+-- Name: Subscriptions; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."Subscriptions" (
+    id integer NOT NULL,
+    "isActive" boolean,
+    "planId" integer NOT NULL,
+    "organisationId" integer NOT NULL,
+    status character varying(255) DEFAULT 'active'::character varying NOT NULL,
+    amount double precision DEFAULT '0'::double precision NOT NULL,
+    "startDate" timestamp with time zone NOT NULL,
+    "endDate" timestamp with time zone NOT NULL,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    uuid uuid
+);
+
+
+--."Subscriptions" OWNER TO postgres;
+
+--
+-- Name: Subscriptions_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+--."Subscriptions_id_seq" OWNER TO postgres;
+
+--
+-- Name: Subscriptions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."Subscriptions_id_seq" OWNED BY public."Subscriptions".id;
+
+
+--
+-- Name: SwitchTokens; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."SwitchTokens" (
+    id integer NOT NULL,
+    "accessToken" text NOT NULL,
+    expires timestamp with time zone NOT NULL,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    uuid uuid
+);
+
+
+--."SwitchTokens" OWNER TO postgres;
+
+--
+-- Name: SwitchTokens_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+
+--."SwitchTokens_id_seq" OWNER TO postgres;
+
+--
+-- Name: SwitchTokens_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."SwitchTokens_id_seq" OWNED BY public."SwitchTokens".id;
+
+
+--
+-- Name: TaskAssignmentEvidences; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."TaskAssignmentEvidences" (
+    id integer NOT NULL,
+    "TaskAssignmentId" integer NOT NULL,
+    comment text NOT NULL,
+    uploads character varying(255)[],
+    type public."enum_TaskAssignmentEvidences_type",
+    source public."enum_TaskAssignmentEvidences_source",
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    location json,
+    uuid uuid
+);
+
+
+--."TaskAssignmentEvidences" OWNER TO postgres;
+
+--
+-- Name: TaskAssignmentEvidences_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+
+--."TaskAssignmentEvidences_id_seq" OWNER TO postgres;
+
+--
+-- Name: TaskAssignmentEvidences_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."TaskAssignmentEvidences_id_seq" OWNED BY public."TaskAssignmentEvidences".id;
+
+
+--
+-- Name: TaskAssignments; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."TaskAssignments" (
+    id integer NOT NULL,
+    "TaskId" integer NOT NULL,
+    "UserId" integer NOT NULL,
+    uploaded_evidence boolean DEFAULT false,
+    approved_by_agent boolean DEFAULT false,
+    approved_by_vendor boolean DEFAULT false,
+    approved boolean DEFAULT false,
+    approved_by integer,
+    approved_at timestamp with time zone,
+    status public."enum_TaskAssignments_status",
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    uuid uuid
+);
+
+
+--."TaskAssignments" OWNER TO postgres;
+
+--
+-- Name: TaskAssignments_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+
+--."TaskAssignments_id_seq" OWNER TO postgres;
+
+--
+-- Name: TaskAssignments_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."TaskAssignments_id_seq" OWNED BY public."TaskAssignments".id;
+
+
+--
+-- Name: Tasks; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."Tasks" (
+    id integer NOT NULL,
+    "CampaignId" integer NOT NULL,
+    name character varying(255) NOT NULL,
+    description character varying(255) NOT NULL,
+    amount integer NOT NULL,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    assignment_count integer DEFAULT 1,
+    assigned integer DEFAULT 0,
+    require_vendor_approval boolean DEFAULT true,
+    require_agent_approval boolean DEFAULT true,
+    require_evidence boolean DEFAULT true,
+    "isCompleted" boolean DEFAULT false,
+    uuid uuid
+);
+
+
+--."Tasks" OWNER TO postgres;
+
+--
+-- Name: Tasks_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+--."Tasks_id_seq" OWNER TO postgres;
+
+--
+-- Name: Tasks_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."Tasks_id_seq" OWNED BY public."Tasks".id;
+
+
+--
+-- Name: Transactions; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."Transactions" (
+    uuid uuid NOT NULL,
+    amount double precision NOT NULL,
+    status public."enum_Transactions_status" DEFAULT 'processing'::public."enum_Transactions_status" NOT NULL,
+    is_approved boolean DEFAULT false NOT NULL,
+    narration character varying(255) NOT NULL,
+    log text,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    reference text,
+    transaction_hash text,
+    transaction_type public."enum_Transactions_transaction_type",
+    "SenderWalletId" uuid,
+    "ReceiverWalletId" uuid,
+    "OrderId" integer,
+    "VendorId" integer,
+    "BeneficiaryId" integer,
+    "OrganisationId" integer,
+    transaction_origin public."enum_Transactions_transaction_origin" NOT NULL,
+    "CampaignId" integer,
+    "BankId" integer
+);
+
+
+--."Transactions" OWNER TO postgres;
+
+--
+-- Name: Users; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."Users" (
+    id integer NOT NULL,
+    referal_id character varying(255),
+    "RoleId" integer NOT NULL,
+    first_name character varying(255),
+    last_name character varying(255),
+    email character varying(255),
+    phone character varying(255),
+    password character varying(255),
+    status public."enum_Users_status" DEFAULT 'pending'::public."enum_Users_status",
+    marital_status character varying(255),
+    gender character varying(255),
+    location character varying(255),
+    bvn character varying(255),
+    nin character varying(255),
+    pin character varying(255),
+    address character varying(255),
+    is_email_verified boolean DEFAULT false,
+    is_phone_verified boolean DEFAULT false,
+    is_bvn_verified boolean DEFAULT false,
+    is_self_signup boolean DEFAULT false,
+    is_public boolean DEFAULT false,
+    is_tfa_enabled boolean DEFAULT false,
+    tfa_secret character varying(255),
+    last_login timestamp with time zone,
+    profile_pic character varying(255),
+    dob timestamp with time zone,
+    nfc character varying(255),
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    is_nin_verified boolean DEFAULT false,
+    vendor_id character varying(255),
+    currency character varying(255),
+    country character varying(255),
+    device_imei character varying(255),
+    username character varying(255),
+    tfa_method public."enum_Users_tfa_method",
+    iris json,
+    tfa_binded_date timestamp with time zone,
+    is_verified boolean DEFAULT false,
+    is_verified_all boolean DEFAULT false,
+    registration_type public."enum_Users_registration_type",
+    is_otp_verified boolean DEFAULT false,
+    uuid uuid
+);
+
+
+--."Users" OWNER TO postgres;
+
+--
+-- Name: Users_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+
+--."Users_id_seq" OWNER TO postgres;
+
+--
+-- Name: Users_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."Users_id_seq" OWNED BY public."Users".id;
+
+
+--
+-- Name: VendorProducts; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."VendorProducts" (
+    id integer NOT NULL,
+    "productId" integer NOT NULL,
+    "vendorId" integer NOT NULL,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    uuid uuid
+);
+
+
+--."VendorProducts" OWNER TO postgres;
+
+--
+-- Name: VendorProducts_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+
+--."VendorProducts_id_seq" OWNER TO postgres;
+
+--
+-- Name: VendorProducts_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."VendorProducts_id_seq" OWNED BY public."VendorProducts".id;
+
+
+--
+-- Name: VendorProposals; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."VendorProposals" (
+    id integer NOT NULL,
+    vendor_id integer NOT NULL,
+    proposal_id integer NOT NULL,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    status public."enum_VendorProposals_status" DEFAULT 'pending'::public."enum_VendorProposals_status",
+    "CampaignId" integer,
+    uuid uuid
+);
+
+
+--."VendorProposals" OWNER TO postgres;
+
+--
+-- Name: VendorProposals_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+--."VendorProposals_id_seq" OWNER TO postgres;
+
+--
+-- Name: VendorProposals_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."VendorProposals_id_seq" OWNED BY public."VendorProposals".id;
+
+
+--
+-- Name: VerificationTokens; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."VerificationTokens" (
+    id integer NOT NULL,
+    "UserId" integer NOT NULL,
+    type character varying(255),
+    token character varying(255),
+    request_ip character varying(255),
+    expires_at timestamp with time zone,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    uuid uuid
+);
+
+
+--."VerificationTokens" OWNER TO postgres;
+
+--
+-- Name: VerificationTokens_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+
+--."VerificationTokens_id_seq" OWNER TO postgres;
+
+--
+-- Name: VerificationTokens_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."VerificationTokens_id_seq" OWNED BY public."VerificationTokens".id;
+
+
+--
+-- Name: VoucherTokens; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."VoucherTokens" (
+    id integer NOT NULL,
+    "beneficiaryId" integer NOT NULL,
+    "campaignId" integer NOT NULL,
+    "organisationId" integer NOT NULL,
+    "tokenType" public."enum_VoucherTokens_tokenType" DEFAULT 'papertoken'::public."enum_VoucherTokens_tokenType" NOT NULL,
+    token text,
+    amount double precision DEFAULT '0'::double precision,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    uuid uuid
+);
+
+
+--."VoucherTokens" OWNER TO postgres;
+
+--
+-- Name: VoucherTokens_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+
+--."VoucherTokens_id_seq" OWNER TO postgres;
+
+--
+-- Name: VoucherTokens_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."VoucherTokens_id_seq" OWNED BY public."VoucherTokens".id;
+
+
+--
+-- Name: Wallets; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."Wallets" (
+    uuid uuid NOT NULL,
+    address character varying(255),
+    "privateKey" character varying(255),
+    "bantuAddress" character varying(255),
+    "bantuPrivateKey" character varying(255),
+    "CampaignId" integer,
+    balance double precision DEFAULT '0'::double precision NOT NULL,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    "UserId" integer,
+    "OrganisationId" integer,
+    wallet_type public."enum_Wallets_wallet_type" DEFAULT 'user'::public."enum_Wallets_wallet_type",
+    crypto_balance double precision DEFAULT '0'::double precision,
+    fiat_balance double precision DEFAULT '0'::double precision,
+    local_currency character varying(255) DEFAULT 'NGN'::character varying,
+    was_funded boolean DEFAULT false,
+    "tokenIds" json DEFAULT '[]'::json
+);
+
+
+--."Wallets" OWNER TO postgres;
+
+--
+-- Name: ZohoTokens; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public."ZohoTokens" (
+    id integer NOT NULL,
+    access_token character varying(255),
+    refresh_token character varying(255),
+    expires_in timestamp with time zone,
+    "createdAt" timestamp with time zone NOT NULL,
+    "updatedAt" timestamp with time zone NOT NULL,
+    uuid uuid
+);
+
+
+--."ZohoTokens" OWNER TO postgres;
+
+--
+-- Name: ZohoTokens_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+
+--."ZohoTokens_id_seq" OWNER TO postgres;
+
+--
+-- Name: ZohoTokens_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+  public."ZohoTokens_id_seq" OWNED BY public."ZohoTokens".id;
+
+
+--
+-- Name: AssociatedCampaigns id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."AssociatedCampaigns" ALTER COLUMN id SET DEFAULT nextval('public."AssociatedCampaigns_id_seq"'::regclass);
+
+
+--
+-- Name: BankAccounts id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."BankAccounts" ALTER COLUMN id SET DEFAULT nextval('public."Accounts_id_seq"'::regclass);
+
+
+--
+-- Name: Beneficiaries id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Beneficiaries" ALTER COLUMN id SET DEFAULT nextval('public."Beneficiaries_id_seq"'::regclass);
+
+
+--
+-- Name: Businesses id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Businesses" ALTER COLUMN id SET DEFAULT nextval('public."Businesses_id_seq"'::regclass);
+
+
+--
+-- Name: CampaignForms id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."CampaignForms" ALTER COLUMN id SET DEFAULT nextval('public."CampaignForms_id_seq"'::regclass);
+
+
+--
+-- Name: CampaignHistories id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."CampaignHistories" ALTER COLUMN id SET DEFAULT nextval('public."CampaignHistories_id_seq"'::regclass);
+
+
+--
+-- Name: CampaignImpactReports id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."CampaignImpactReports" ALTER COLUMN id SET DEFAULT nextval('public."CampaignImpactReports_id_seq"'::regclass);
+
+
+--
+-- Name: CampaignVendors id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."CampaignVendors" ALTER COLUMN id SET DEFAULT nextval('public."CampaignVendors_id_seq"'::regclass);
+
+
+--
+-- Name: Campaigns id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Campaigns" ALTER COLUMN id SET DEFAULT nextval('public."Campaigns_id_seq"'::regclass);
+
+
+--
+-- Name: Complaints id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Complaints" ALTER COLUMN id SET DEFAULT nextval('public."Complaints_id_seq"'::regclass);
+
+
+--
+-- Name: FingerPrints id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."FingerPrints" ALTER COLUMN id SET DEFAULT nextval('public."FingerPrints_id_seq"'::regclass);
+
+
+--
+-- Name: FormAnswers id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."FormAnswers" ALTER COLUMN id SET DEFAULT nextval('public."FormAnswers_id_seq"'::regclass);
+
+
+--
+-- Name: FundAccounts id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."FundAccounts" ALTER COLUMN id SET DEFAULT nextval('public."FundAccounts_id_seq"'::regclass);
+
+
+--
+-- Name: Groups id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Groups" ALTER COLUMN id SET DEFAULT nextval('public."Groups_id_seq"'::regclass);
+
+
+--
+-- Name: ImpactReports id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."ImpactReports" ALTER COLUMN id SET DEFAULT nextval('public."ImpactReports_id_seq"'::regclass);
+
+
+--
+-- Name: Livenesses id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Livenesses" ALTER COLUMN id SET DEFAULT nextval('public."Livenesses_id_seq"'::regclass);
+
+
+--
+-- Name: Markets id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Markets" ALTER COLUMN id SET DEFAULT nextval('public."Markets_id_seq"'::regclass);
+
+
+--
+-- Name: Members id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Members" ALTER COLUMN id SET DEFAULT nextval('public."Members_id_seq"'::regclass);
+
+
+--
+-- Name: OrderProducts id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."OrderProducts" ALTER COLUMN id SET DEFAULT nextval('public."OrderProducts_id_seq"'::regclass);
+
+
+--
+-- Name: Orders id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Orders" ALTER COLUMN id SET DEFAULT nextval('public."Orders_id_seq"'::regclass);
+
+
+--
+-- Name: OrganisationMembers id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."OrganisationMembers" ALTER COLUMN id SET DEFAULT nextval('public."OrganisationMembers_id_seq"'::regclass);
+
+
+--
+-- Name: Organisations id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Organisations" ALTER COLUMN id SET DEFAULT nextval('public."Organisations_id_seq"'::regclass);
+
+
+--
+-- Name: Plans id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Plans" ALTER COLUMN id SET DEFAULT nextval('public."Plans_id_seq"'::regclass);
+
+
+--
+-- Name: ProductBeneficiaries id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."ProductBeneficiaries" ALTER COLUMN id SET DEFAULT nextval('public."ProductBeneficiaries_id_seq"'::regclass);
+
+
+--
+-- Name: ProductCategories id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."ProductCategories" ALTER COLUMN id SET DEFAULT nextval('public."ProductCategories_id_seq"'::regclass);
+
+
+--
+-- Name: Products id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Products" ALTER COLUMN id SET DEFAULT nextval('public."Products_id_seq"'::regclass);
+
+
+--
+-- Name: ProposalRequests id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."ProposalRequests" ALTER COLUMN id SET DEFAULT nextval('public."ProposalRequests_id_seq"'::regclass);
+
+
+--
+-- Name: RequestFunds id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."RequestFunds" ALTER COLUMN id SET DEFAULT nextval('public."RequestFunds_id_seq"'::regclass);
+
+
+--
+-- Name: Roles id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Roles" ALTER COLUMN id SET DEFAULT nextval('public."Roles_id_seq"'::regclass);
+
+
+--
+-- Name: StoreTransactions id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."StoreTransactions" ALTER COLUMN id SET DEFAULT nextval('public."StoreTransactions_id_seq"'::regclass);
+
+
+--
+-- Name: Subscriptions id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Subscriptions" ALTER COLUMN id SET DEFAULT nextval('public."Subscriptions_id_seq"'::regclass);
+
+
+--
+-- Name: SwitchTokens id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."SwitchTokens" ALTER COLUMN id SET DEFAULT nextval('public."SwitchTokens_id_seq"'::regclass);
+
+
+--
+-- Name: TaskAssignmentEvidences id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."TaskAssignmentEvidences" ALTER COLUMN id SET DEFAULT nextval('public."TaskAssignmentEvidences_id_seq"'::regclass);
+
+
+--
+-- Name: TaskAssignments id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."TaskAssignments" ALTER COLUMN id SET DEFAULT nextval('public."TaskAssignments_id_seq"'::regclass);
+
+
+--
+-- Name: Tasks id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Tasks" ALTER COLUMN id SET DEFAULT nextval('public."Tasks_id_seq"'::regclass);
+
+
+--
+-- Name: Users id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Users" ALTER COLUMN id SET DEFAULT nextval('public."Users_id_seq"'::regclass);
+
+
+--
+-- Name: VendorProducts id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."VendorProducts" ALTER COLUMN id SET DEFAULT nextval('public."VendorProducts_id_seq"'::regclass);
+
+
+--
+-- Name: VendorProposals id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."VendorProposals" ALTER COLUMN id SET DEFAULT nextval('public."VendorProposals_id_seq"'::regclass);
+
+
+--
+-- Name: VerificationTokens id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."VerificationTokens" ALTER COLUMN id SET DEFAULT nextval('public."VerificationTokens_id_seq"'::regclass);
+
+
+--
+-- Name: VoucherTokens id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."VoucherTokens" ALTER COLUMN id SET DEFAULT nextval('public."VoucherTokens_id_seq"'::regclass);
+
+
+--
+-- Name: ZohoTokens id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."ZohoTokens" ALTER COLUMN id SET DEFAULT nextval('public."ZohoTokens_id_seq"'::regclass);
+
+
+--
+-- Name: BankAccounts Accounts_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."BankAccounts"
+    ADD CONSTRAINT "Accounts_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: AssociatedCampaigns AssociatedCampaigns_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."AssociatedCampaigns"
+    ADD CONSTRAINT "AssociatedCampaigns_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: Beneficiaries Beneficiaries_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Beneficiaries"
+    ADD CONSTRAINT "Beneficiaries_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: Businesses Businesses_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Businesses"
+    ADD CONSTRAINT "Businesses_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: CampaignForms CampaignForms_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."CampaignForms"
+    ADD CONSTRAINT "CampaignForms_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: CampaignHistories CampaignHistories_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."CampaignHistories"
+    ADD CONSTRAINT "CampaignHistories_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: CampaignImpactReports CampaignImpactReports_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."CampaignImpactReports"
+    ADD CONSTRAINT "CampaignImpactReports_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: CampaignVendors CampaignVendors_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."CampaignVendors"
+    ADD CONSTRAINT "CampaignVendors_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: Campaigns Campaigns_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Campaigns"
+    ADD CONSTRAINT "Campaigns_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: Complaints Complaints_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Complaints"
+    ADD CONSTRAINT "Complaints_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: FingerPrints FingerPrints_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."FingerPrints"
+    ADD CONSTRAINT "FingerPrints_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: FormAnswers FormAnswers_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."FormAnswers"
+    ADD CONSTRAINT "FormAnswers_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: FundAccounts FundAccounts_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."FundAccounts"
+    ADD CONSTRAINT "FundAccounts_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: Groups Groups_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Groups"
+    ADD CONSTRAINT "Groups_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: ImpactReports ImpactReports_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."ImpactReports"
+    ADD CONSTRAINT "ImpactReports_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: Invites Invites_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Invites"
+    ADD CONSTRAINT "Invites_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: Livenesses Livenesses_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Livenesses"
+    ADD CONSTRAINT "Livenesses_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: Markets Markets_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Markets"
+    ADD CONSTRAINT "Markets_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: Members Members_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Members"
+    ADD CONSTRAINT "Members_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: OrderProducts OrderProducts_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."OrderProducts"
+    ADD CONSTRAINT "OrderProducts_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: Orders Orders_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Orders"
+    ADD CONSTRAINT "Orders_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: Orders Orders_reference_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Orders"
+    ADD CONSTRAINT "Orders_reference_key" UNIQUE (reference);
+
+
+--
+-- Name: OrganisationMembers OrganisationMembers_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."OrganisationMembers"
+    ADD CONSTRAINT "OrganisationMembers_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: Organisations Organisations_email_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Organisations"
+    ADD CONSTRAINT "Organisations_email_key" UNIQUE (email);
+
+
+--
+-- Name: Organisations Organisations_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Organisations"
+    ADD CONSTRAINT "Organisations_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: Organisations Organisations_registration_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Organisations"
+    ADD CONSTRAINT "Organisations_registration_id_key" UNIQUE (registration_id);
+
+
+--
+-- Name: OneTimePasswords PasswordResetTokens_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."OneTimePasswords"
+    ADD CONSTRAINT "PasswordResetTokens_pkey" PRIMARY KEY (ref);
+
+
+--
+-- Name: Plans Plans_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Plans"
+    ADD CONSTRAINT "Plans_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: ProductBeneficiaries ProductBeneficiaries_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."ProductBeneficiaries"
+    ADD CONSTRAINT "ProductBeneficiaries_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: ProductCategories ProductCategories_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."ProductCategories"
+    ADD CONSTRAINT "ProductCategories_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: Products Products_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Products"
+    ADD CONSTRAINT "Products_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: ProposalRequests ProposalRequests_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."ProposalRequests"
+    ADD CONSTRAINT "ProposalRequests_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: RequestFunds RequestFunds_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."RequestFunds"
+    ADD CONSTRAINT "RequestFunds_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: Roles Roles_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Roles"
+    ADD CONSTRAINT "Roles_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: SequelizeMeta SequelizeMeta_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."SequelizeMeta"
+    ADD CONSTRAINT "SequelizeMeta_pkey" PRIMARY KEY (name);
+
+
+--
+-- Name: StoreTransactions StoreTransactions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."StoreTransactions"
+    ADD CONSTRAINT "StoreTransactions_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: StoreTransactions StoreTransactions_reference_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."StoreTransactions"
+    ADD CONSTRAINT "StoreTransactions_reference_key" UNIQUE (reference);
+
+
+--
+-- Name: Subscriptions Subscriptions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Subscriptions"
+    ADD CONSTRAINT "Subscriptions_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: SwitchTokens SwitchTokens_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."SwitchTokens"
+    ADD CONSTRAINT "SwitchTokens_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: TaskAssignmentEvidences TaskAssignmentEvidences_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."TaskAssignmentEvidences"
+    ADD CONSTRAINT "TaskAssignmentEvidences_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: TaskAssignments TaskAssignments_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."TaskAssignments"
+    ADD CONSTRAINT "TaskAssignments_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: Tasks Tasks_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Tasks"
+    ADD CONSTRAINT "Tasks_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: Transactions Transactions_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Transactions"
+    ADD CONSTRAINT "Transactions_pkey" PRIMARY KEY (uuid);
+
+
+--
+-- Name: Users Users_email_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Users"
+    ADD CONSTRAINT "Users_email_key" UNIQUE (email);
+
+
+--
+-- Name: Users Users_nin_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Users"
+    ADD CONSTRAINT "Users_nin_key" UNIQUE (nin);
+
+
+--
+-- Name: Users Users_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Users"
+    ADD CONSTRAINT "Users_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: VendorProducts VendorProducts_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."VendorProducts"
+    ADD CONSTRAINT "VendorProducts_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: VendorProposals VendorProposals_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."VendorProposals"
+    ADD CONSTRAINT "VendorProposals_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: VerificationTokens VerificationTokens_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."VerificationTokens"
+    ADD CONSTRAINT "VerificationTokens_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: VoucherTokens VoucherTokens_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."VoucherTokens"
+    ADD CONSTRAINT "VoucherTokens_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: Wallets Wallets_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Wallets"
+    ADD CONSTRAINT "Wallets_pkey" PRIMARY KEY (uuid);
+
+
+--
+-- Name: ZohoTokens ZohoTokens_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."ZohoTokens"
+    ADD CONSTRAINT "ZohoTokens_pkey" PRIMARY KEY (id);
+
+
+--
+-- Name: BankAccounts Accounts_UserId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."BankAccounts"
+    ADD CONSTRAINT "Accounts_UserId_fkey" FOREIGN KEY ("UserId") REFERENCES public."Users"(id);
+
+
+--
+-- Name: AssociatedCampaigns AssociatedCampaigns_CampaignId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."AssociatedCampaigns"
+    ADD CONSTRAINT "AssociatedCampaigns_CampaignId_fkey" FOREIGN KEY ("CampaignId") REFERENCES public."Campaigns"(id);
+
+
+--
+-- Name: AssociatedCampaigns AssociatedCampaigns_DonorId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."AssociatedCampaigns"
+    ADD CONSTRAINT "AssociatedCampaigns_DonorId_fkey" FOREIGN KEY ("DonorId") REFERENCES public."Organisations"(id);
+
+
+--
+-- Name: Beneficiaries Beneficiaries_CampaignId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Beneficiaries"
+    ADD CONSTRAINT "Beneficiaries_CampaignId_fkey" FOREIGN KEY ("CampaignId") REFERENCES public."Campaigns"(id);
+
+
+--
+-- Name: Beneficiaries Beneficiaries_UserId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Beneficiaries"
+    ADD CONSTRAINT "Beneficiaries_UserId_fkey" FOREIGN KEY ("UserId") REFERENCES public."Users"(id);
+
+
+--
+-- Name: Businesses Businesses_accountId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Businesses"
+    ADD CONSTRAINT "Businesses_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES public."BankAccounts"(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: Businesses Businesses_vendorId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Businesses"
+    ADD CONSTRAINT "Businesses_vendorId_fkey" FOREIGN KEY ("vendorId") REFERENCES public."Users"(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: CampaignForms CampaignForms_beneficiaryId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."CampaignForms"
+    ADD CONSTRAINT "CampaignForms_beneficiaryId_fkey" FOREIGN KEY ("beneficiaryId") REFERENCES public."Users"(id);
+
+
+--
+-- Name: CampaignForms CampaignForms_organisationId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."CampaignForms"
+    ADD CONSTRAINT "CampaignForms_organisationId_fkey" FOREIGN KEY ("organisationId") REFERENCES public."Organisations"(id);
+
+
+--
+-- Name: CampaignHistories CampaignHistories_campaign_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."CampaignHistories"
+    ADD CONSTRAINT "CampaignHistories_campaign_id_fkey" FOREIGN KEY (campaign_id) REFERENCES public."Campaigns"(id);
+
+
+--
+-- Name: CampaignImpactReports CampaignImpactReports_AgentId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."CampaignImpactReports"
+    ADD CONSTRAINT "CampaignImpactReports_AgentId_fkey" FOREIGN KEY ("AgentId") REFERENCES public."Users"(id);
+
+
+--
+-- Name: CampaignImpactReports CampaignImpactReports_CampaignId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."CampaignImpactReports"
+    ADD CONSTRAINT "CampaignImpactReports_CampaignId_fkey" FOREIGN KEY ("CampaignId") REFERENCES public."Campaigns"(id);
+
+
+--
+-- Name: CampaignVendors CampaignVendors_CampaignId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."CampaignVendors"
+    ADD CONSTRAINT "CampaignVendors_CampaignId_fkey" FOREIGN KEY ("CampaignId") REFERENCES public."Campaigns"(id);
+
+
+--
+-- Name: CampaignVendors CampaignVendors_VendorId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."CampaignVendors"
+    ADD CONSTRAINT "CampaignVendors_VendorId_fkey" FOREIGN KEY ("VendorId") REFERENCES public."Users"(id);
+
+
+--
+-- Name: Campaigns Campaigns_OrganisationId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Campaigns"
+    ADD CONSTRAINT "Campaigns_OrganisationId_fkey" FOREIGN KEY ("OrganisationId") REFERENCES public."Organisations"(id);
+
+
+--
+-- Name: Campaigns Campaigns_category_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Campaigns"
+    ADD CONSTRAINT "Campaigns_category_id_fkey" FOREIGN KEY (category_id) REFERENCES public."ProductCategories"(id);
+
+
+--
+-- Name: Campaigns Campaigns_formId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Campaigns"
+    ADD CONSTRAINT "Campaigns_formId_fkey" FOREIGN KEY ("formId") REFERENCES public."CampaignForms"(id);
+
+
+--
+-- Name: Complaints Complaints_CampaignId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Complaints"
+    ADD CONSTRAINT "Complaints_CampaignId_fkey" FOREIGN KEY ("CampaignId") REFERENCES public."Campaigns"(id);
+
+
+--
+-- Name: Complaints Complaints_UserId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Complaints"
+    ADD CONSTRAINT "Complaints_UserId_fkey" FOREIGN KEY ("UserId") REFERENCES public."Users"(id);
+
+
+--
+-- Name: FingerPrints FingerPrints_UserId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."FingerPrints"
+    ADD CONSTRAINT "FingerPrints_UserId_fkey" FOREIGN KEY ("UserId") REFERENCES public."Users"(id);
+
+
+--
+-- Name: FormAnswers FormAnswers_beneficiaryId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."FormAnswers"
+    ADD CONSTRAINT "FormAnswers_beneficiaryId_fkey" FOREIGN KEY ("beneficiaryId") REFERENCES public."Users"(id);
+
+
+--
+-- Name: FormAnswers FormAnswers_campaignId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."FormAnswers"
+    ADD CONSTRAINT "FormAnswers_campaignId_fkey" FOREIGN KEY ("campaignId") REFERENCES public."Campaigns"(id);
+
+
+--
+-- Name: FormAnswers FormAnswers_formId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."FormAnswers"
+    ADD CONSTRAINT "FormAnswers_formId_fkey" FOREIGN KEY ("formId") REFERENCES public."CampaignForms"(id);
+
+
+--
+-- Name: FundAccounts FundAccounts_CampaignId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."FundAccounts"
+    ADD CONSTRAINT "FundAccounts_CampaignId_fkey" FOREIGN KEY ("CampaignId") REFERENCES public."Campaigns"(id);
+
+
+--
+-- Name: FundAccounts FundAccounts_OrganisationId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."FundAccounts"
+    ADD CONSTRAINT "FundAccounts_OrganisationId_fkey" FOREIGN KEY ("OrganisationId") REFERENCES public."Organisations"(id);
+
+
+--
+-- Name: FundAccounts FundAccounts_UserId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."FundAccounts"
+    ADD CONSTRAINT "FundAccounts_UserId_fkey" FOREIGN KEY ("UserId") REFERENCES public."Users"(id);
+
+
+--
+-- Name: Groups Groups_representative_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Groups"
+    ADD CONSTRAINT "Groups_representative_id_fkey" FOREIGN KEY (representative_id) REFERENCES public."Users"(id);
+
+
+--
+-- Name: ImpactReports ImpactReports_AgentId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."ImpactReports"
+    ADD CONSTRAINT "ImpactReports_AgentId_fkey" FOREIGN KEY ("AgentId") REFERENCES public."Users"(id);
+
+
+--
+-- Name: ImpactReports ImpactReports_CampaignId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."ImpactReports"
+    ADD CONSTRAINT "ImpactReports_CampaignId_fkey" FOREIGN KEY ("CampaignId") REFERENCES public."Campaigns"(id);
+
+
+--
+-- Name: Livenesses Livenesses_authorized_by_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Livenesses"
+    ADD CONSTRAINT "Livenesses_authorized_by_fkey" FOREIGN KEY (authorized_by) REFERENCES public."Users"(id) ON UPDATE CASCADE ON DELETE CASCADE;
+
+
+--
+-- Name: Markets Markets_UserId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Markets"
+    ADD CONSTRAINT "Markets_UserId_fkey" FOREIGN KEY ("UserId") REFERENCES public."Users"(id);
+
+
+--
+-- Name: Markets Markets_category_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Markets"
+    ADD CONSTRAINT "Markets_category_id_fkey" FOREIGN KEY (category_id) REFERENCES public."ProductCategories"(id);
+
+
+--
+-- Name: Members Members_group_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Members"
+    ADD CONSTRAINT "Members_group_id_fkey" FOREIGN KEY (group_id) REFERENCES public."Groups"(id);
+
+
+--
+-- Name: OrderProducts OrderProducts_OrderId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."OrderProducts"
+    ADD CONSTRAINT "OrderProducts_OrderId_fkey" FOREIGN KEY ("OrderId") REFERENCES public."Orders"(id);
+
+
+--
+-- Name: OrderProducts OrderProducts_ProductId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."OrderProducts"
+    ADD CONSTRAINT "OrderProducts_ProductId_fkey" FOREIGN KEY ("ProductId") REFERENCES public."Products"(id);
+
+
+--
+-- Name: Orders Orders_CampaignId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Orders"
+    ADD CONSTRAINT "Orders_CampaignId_fkey" FOREIGN KEY ("CampaignId") REFERENCES public."Campaigns"(id);
+
+
+--
+-- Name: Orders Orders_VendorId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Orders"
+    ADD CONSTRAINT "Orders_VendorId_fkey" FOREIGN KEY ("VendorId") REFERENCES public."Users"(id);
+
+
+--
+-- Name: OrganisationMembers OrganisationMembers_OrganisationId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."OrganisationMembers"
+    ADD CONSTRAINT "OrganisationMembers_OrganisationId_fkey" FOREIGN KEY ("OrganisationId") REFERENCES public."Organisations"(id);
+
+
+--
+-- Name: OrganisationMembers OrganisationMembers_UserId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."OrganisationMembers"
+    ADD CONSTRAINT "OrganisationMembers_UserId_fkey" FOREIGN KEY ("UserId") REFERENCES public."Users"(id);
+
+
+--
+-- Name: OneTimePasswords PasswordResetTokens_UserId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."OneTimePasswords"
+    ADD CONSTRAINT "PasswordResetTokens_UserId_fkey" FOREIGN KEY ("UserId") REFERENCES public."Users"(id);
+
+
+--
+-- Name: ProductBeneficiaries ProductBeneficiaries_OrganisationId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."ProductBeneficiaries"
+    ADD CONSTRAINT "ProductBeneficiaries_OrganisationId_fkey" FOREIGN KEY ("OrganisationId") REFERENCES public."Organisations"(id);
+
+
+--
+-- Name: ProductBeneficiaries ProductBeneficiaries_UserId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."ProductBeneficiaries"
+    ADD CONSTRAINT "ProductBeneficiaries_UserId_fkey" FOREIGN KEY ("UserId") REFERENCES public."Users"(id);
+
+
+--
+-- Name: ProductBeneficiaries ProductBeneficiaries_productId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."ProductBeneficiaries"
+    ADD CONSTRAINT "ProductBeneficiaries_productId_fkey" FOREIGN KEY ("productId") REFERENCES public."Products"(id);
+
+
+--
+-- Name: ProductCategories ProductCategories_organisation_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."ProductCategories"
+    ADD CONSTRAINT "ProductCategories_organisation_id_fkey" FOREIGN KEY (organisation_id) REFERENCES public."Organisations"(id);
+
+
+--
+-- Name: Products Products_CampaignId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Products"
+    ADD CONSTRAINT "Products_CampaignId_fkey" FOREIGN KEY ("CampaignId") REFERENCES public."Campaigns"(id);
+
+
+--
+-- Name: Products Products_proposal_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Products"
+    ADD CONSTRAINT "Products_proposal_id_fkey" FOREIGN KEY (proposal_id) REFERENCES public."ProposalRequests"(id) ON UPDATE CASCADE;
+
+
+--
+-- Name: Products Products_vendor_proposal_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Products"
+    ADD CONSTRAINT "Products_vendor_proposal_id_fkey" FOREIGN KEY (vendor_proposal_id) REFERENCES public."VendorProposals"(id);
+
+
+--
+-- Name: ProposalRequests ProposalRequests_campaign_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."ProposalRequests"
+    ADD CONSTRAINT "ProposalRequests_campaign_id_fkey" FOREIGN KEY (campaign_id) REFERENCES public."Campaigns"(id) ON UPDATE CASCADE;
+
+
+--
+-- Name: ProposalRequests ProposalRequests_category_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."ProposalRequests"
+    ADD CONSTRAINT "ProposalRequests_category_id_fkey" FOREIGN KEY (category_id) REFERENCES public."ProductCategories"(id);
+
+
+--
+-- Name: ProposalRequests ProposalRequests_organisation_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."ProposalRequests"
+    ADD CONSTRAINT "ProposalRequests_organisation_id_fkey" FOREIGN KEY (organisation_id) REFERENCES public."Organisations"(id) ON UPDATE CASCADE;
+
+
+--
+-- Name: RequestFunds RequestFunds_admin_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."RequestFunds"
+    ADD CONSTRAINT "RequestFunds_admin_id_fkey" FOREIGN KEY (admin_id) REFERENCES public."Users"(id);
+
+
+--
+-- Name: RequestFunds RequestFunds_campaign_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."RequestFunds"
+    ADD CONSTRAINT "RequestFunds_campaign_id_fkey" FOREIGN KEY (campaign_id) REFERENCES public."Campaigns"(id);
+
+
+--
+-- Name: RequestFunds RequestFunds_donor_organisation_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."RequestFunds"
+    ADD CONSTRAINT "RequestFunds_donor_organisation_id_fkey" FOREIGN KEY (donor_organisation_id) REFERENCES public."Organisations"(id);
+
+
+--
+-- Name: StoreTransactions StoreTransactions_BeneficiaryId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."StoreTransactions"
+    ADD CONSTRAINT "StoreTransactions_BeneficiaryId_fkey" FOREIGN KEY ("BeneficiaryId") REFERENCES public."Users"(id);
+
+
+--
+-- Name: StoreTransactions StoreTransactions_OrderId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."StoreTransactions"
+    ADD CONSTRAINT "StoreTransactions_OrderId_fkey" FOREIGN KEY ("OrderId") REFERENCES public."Orders"(id);
+
+
+--
+-- Name: StoreTransactions StoreTransactions_VendorId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."StoreTransactions"
+    ADD CONSTRAINT "StoreTransactions_VendorId_fkey" FOREIGN KEY ("VendorId") REFERENCES public."Users"(id);
+
+
+--
+-- Name: StoreTransactions StoreTransactions_WalletTxId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."StoreTransactions"
+    ADD CONSTRAINT "StoreTransactions_WalletTxId_fkey" FOREIGN KEY ("WalletTxId") REFERENCES public."Transactions"(uuid);
+
+
+--
+-- Name: Subscriptions Subscriptions_organisationId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Subscriptions"
+    ADD CONSTRAINT "Subscriptions_organisationId_fkey" FOREIGN KEY ("organisationId") REFERENCES public."Organisations"(id);
+
+
+--
+-- Name: Subscriptions Subscriptions_planId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Subscriptions"
+    ADD CONSTRAINT "Subscriptions_planId_fkey" FOREIGN KEY ("planId") REFERENCES public."Plans"(id);
+
+
+--
+-- Name: TaskAssignmentEvidences TaskAssignmentEvidences_TaskAssignmentId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."TaskAssignmentEvidences"
+    ADD CONSTRAINT "TaskAssignmentEvidences_TaskAssignmentId_fkey" FOREIGN KEY ("TaskAssignmentId") REFERENCES public."TaskAssignments"(id);
+
+
+--
+-- Name: TaskAssignments TaskAssignments_TaskId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."TaskAssignments"
+    ADD CONSTRAINT "TaskAssignments_TaskId_fkey" FOREIGN KEY ("TaskId") REFERENCES public."Tasks"(id);
+
+
+--
+-- Name: TaskAssignments TaskAssignments_UserId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."TaskAssignments"
+    ADD CONSTRAINT "TaskAssignments_UserId_fkey" FOREIGN KEY ("UserId") REFERENCES public."Users"(id);
+
+
+--
+-- Name: Tasks Tasks_CampaignId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Tasks"
+    ADD CONSTRAINT "Tasks_CampaignId_fkey" FOREIGN KEY ("CampaignId") REFERENCES public."Campaigns"(id);
+
+
+--
+-- Name: Transactions Transactions_BankId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Transactions"
+    ADD CONSTRAINT "Transactions_BankId_fkey" FOREIGN KEY ("BankId") REFERENCES public."BankAccounts"(id);
+
+
+--
+-- Name: Transactions Transactions_BeneficiaryId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Transactions"
+    ADD CONSTRAINT "Transactions_BeneficiaryId_fkey" FOREIGN KEY ("BeneficiaryId") REFERENCES public."Users"(id);
+
+
+--
+-- Name: Transactions Transactions_CampaignId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Transactions"
+    ADD CONSTRAINT "Transactions_CampaignId_fkey" FOREIGN KEY ("CampaignId") REFERENCES public."Campaigns"(id);
+
+
+--
+-- Name: Transactions Transactions_OrderId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Transactions"
+    ADD CONSTRAINT "Transactions_OrderId_fkey" FOREIGN KEY ("OrderId") REFERENCES public."Orders"(id);
+
+
+--
+-- Name: Transactions Transactions_OrganisationId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Transactions"
+    ADD CONSTRAINT "Transactions_OrganisationId_fkey" FOREIGN KEY ("OrganisationId") REFERENCES public."Organisations"(id);
+
+
+--
+-- Name: Transactions Transactions_ReceiverWalletId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Transactions"
+    ADD CONSTRAINT "Transactions_ReceiverWalletId_fkey" FOREIGN KEY ("ReceiverWalletId") REFERENCES public."Wallets"(uuid);
+
+
+--
+-- Name: Transactions Transactions_SenderWalletId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Transactions"
+    ADD CONSTRAINT "Transactions_SenderWalletId_fkey" FOREIGN KEY ("SenderWalletId") REFERENCES public."Wallets"(uuid);
+
+
+--
+-- Name: Transactions Transactions_VendorId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Transactions"
+    ADD CONSTRAINT "Transactions_VendorId_fkey" FOREIGN KEY ("VendorId") REFERENCES public."Users"(id);
+
+
+--
+-- Name: Users Users_RoleId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Users"
+    ADD CONSTRAINT "Users_RoleId_fkey" FOREIGN KEY ("RoleId") REFERENCES public."Roles"(id);
+
+
+--
+-- Name: VendorProducts VendorProducts_productId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."VendorProducts"
+    ADD CONSTRAINT "VendorProducts_productId_fkey" FOREIGN KEY ("productId") REFERENCES public."Products"(id);
+
+
+--
+-- Name: VendorProducts VendorProducts_vendorId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."VendorProducts"
+    ADD CONSTRAINT "VendorProducts_vendorId_fkey" FOREIGN KEY ("vendorId") REFERENCES public."Users"(id);
+
+
+--
+-- Name: VendorProposals VendorProposals_CampaignId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."VendorProposals"
+    ADD CONSTRAINT "VendorProposals_CampaignId_fkey" FOREIGN KEY ("CampaignId") REFERENCES public."Campaigns"(id);
+
+
+--
+-- Name: VendorProposals VendorProposals_proposal_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."VendorProposals"
+    ADD CONSTRAINT "VendorProposals_proposal_id_fkey" FOREIGN KEY (proposal_id) REFERENCES public."ProposalRequests"(id) ON UPDATE CASCADE;
+
+
+--
+-- Name: VendorProposals VendorProposals_vendor_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."VendorProposals"
+    ADD CONSTRAINT "VendorProposals_vendor_id_fkey" FOREIGN KEY (vendor_id) REFERENCES public."Users"(id);
+
+
+--
+-- Name: VerificationTokens VerificationTokens_UserId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."VerificationTokens"
+    ADD CONSTRAINT "VerificationTokens_UserId_fkey" FOREIGN KEY ("UserId") REFERENCES public."Users"(id);
+
+
+--
+-- Name: VoucherTokens VoucherTokens_beneficiaryId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."VoucherTokens"
+    ADD CONSTRAINT "VoucherTokens_beneficiaryId_fkey" FOREIGN KEY ("beneficiaryId") REFERENCES public."Users"(id);
+
+
+--
+-- Name: VoucherTokens VoucherTokens_campaignId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."VoucherTokens"
+    ADD CONSTRAINT "VoucherTokens_campaignId_fkey" FOREIGN KEY ("campaignId") REFERENCES public."Campaigns"(id);
+
+
+--
+-- Name: VoucherTokens VoucherTokens_organisationId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."VoucherTokens"
+    ADD CONSTRAINT "VoucherTokens_organisationId_fkey" FOREIGN KEY ("organisationId") REFERENCES public."Organisations"(id);
+
+
+--
+-- Name: Wallets Wallets_CampaignId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Wallets"
+    ADD CONSTRAINT "Wallets_CampaignId_fkey" FOREIGN KEY ("CampaignId") REFERENCES public."Campaigns"(id);
+
+
+--
+-- Name: Wallets Wallets_OrganisationId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Wallets"
+    ADD CONSTRAINT "Wallets_OrganisationId_fkey" FOREIGN KEY ("OrganisationId") REFERENCES public."Organisations"(id);
+
+
+--
+-- Name: Wallets Wallets_UserId_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public."Wallets"
+    ADD CONSTRAINT "Wallets_UserId_fkey" FOREIGN KEY ("UserId") REFERENCES public."Users"(id);
+
+
+--
+-- PostgreSQL database dump complete
+--
+

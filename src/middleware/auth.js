@@ -1,9 +1,9 @@
 require('dotenv').config();
 
 const jwt = require('jsonwebtoken');
-const {User} = require('../models');
-const {Response} = require('../libs');
-const {HttpStatusCode} = require('../utils');
+const { User } = require('../models');
+const { Response } = require('../libs');
+const { HttpStatusCode } = require('../utils');
 const {
   Guest,
   SuperAdmin,
@@ -16,59 +16,76 @@ const {
   Donor
 } = require('../utils').AclRoles;
 
+// ✅ Unified Auth middleware factory
 const Auth =
   (roleIds = null) =>
-  (req, res, next) => {
+  async (req, res, next) => {
     try {
-      const token = req.headers.authorization.split(' ')[1];
-      jwt.verify(token, process.env.SECRET_KEY, async (err, payload) => {
-        if (err) {
-          Response.setError(
-            HttpStatusCode.STATUS_UNAUTHORIZED,
-            'Unauthorised. Token Invalid'
-          );
-          return Response.send(res);
-        }
+      const authHeader = req.headers.authorization;
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        Response.setError(HttpStatusCode.STATUS_UNAUTHORIZED, 'Missing auth token');
+        return Response.send(res);
+      }
 
-        const user = await User.findByPk(payload.uid);
-        const userOrgs = payload.oids;
+      const token = authHeader.split(' ')[1];
+      const payload = jwt.verify(token, process.env.SECRET_KEY);
 
-        if (!user || !userOrgs) {
-          Response.setError(
-            HttpStatusCode.STATUS_UNAUTHORIZED,
-            'Unauthorised. User does not exist in our system'
-          );
-          return Response.send(res);
-        }
-
-        // TODO: check user status
-
-        if (
-          user &&
-          roleIds &&
-          roleIds.length &&
-          !roleIds.includes(parseInt(user.RoleId))
-        ) {
-          Response.setError(
-            HttpStatusCode.STATUS_FORBIDDEN,
-            'Access Denied, Unauthorised Access'
-          );
-          return Response.send(res);
-        }
-
-        req.user = user;
-        req.userOrgs = userOrgs;
-        next();
+      // ✅ Fetch full user INCLUDING pin & password
+      const user = await User.findByPk(payload.uid, {
+        attributes: [
+          'id',
+          'email',
+          'first_name',
+          'last_name',
+          'RoleId',
+          'pin',          // make sure pin is included
+          'password',     // include password (used for password change)
+          'status',
+          'is_verified',
+          'is_verified_all',
+          'is_nin_verified'
+        ]
       });
+
+      const userOrgs = payload.oids;
+
+      if (!user || !userOrgs) {
+        Response.setError(
+          HttpStatusCode.STATUS_UNAUTHORIZED,
+          'Unauthorised. User does not exist in our system'
+        );
+        return Response.send(res);
+      }
+
+      // ✅ Role restriction
+      if (
+        roleIds &&
+        roleIds.length &&
+        !roleIds.includes(parseInt(user.RoleId))
+      ) {
+        Response.setError(
+          HttpStatusCode.STATUS_FORBIDDEN,
+          'Access Denied, Unauthorised Access'
+        );
+        return Response.send(res);
+      }
+
+      // Attach to request
+      req.user = user; // Sequelize model (still fine)
+      req.userOrgs = userOrgs;
+      next();
     } catch (error) {
+      console.error('Auth middleware error:', error);
       Response.setError(
         HttpStatusCode.STATUS_UNAUTHORIZED,
-        'Unauthorised. Token Invalid'
+        'Unauthorised. Token Invalid or Expired.'
       );
       return Response.send(res);
     }
   };
 
+
+// ✅ Export the same role guards
 exports.Auth = Auth();
 exports.AdminVendor = Auth([SuperAdmin, Vendor]);
 exports.SuperAdminAuth = Auth([SuperAdmin]);

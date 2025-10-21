@@ -130,29 +130,38 @@ class WalletController {
           }
         });
 
-      const currencyObj = CurrencyServices;
-      //convert currency to set currency if not in USD
-      //get users set currency
-      if (
-        usersCurrency === '' ||
-        usersCurrency == null ||
-        usersCurrency === 'USD'
-      ) {
+      // const currencyObj = CurrencyServices;
+      // //convert currency to set currency if not in USD
+      // //get users set currency
+      // if (
+      //   usersCurrency === '' ||
+      //   usersCurrency == null ||
+      //   usersCurrency === 'USD'
+      // ) {
+      //   usersCurrency = 'USD';
+      //   //  console.log(usersCurrency);
+      //   exchangeRate = await currencyObj.convertCurrency(
+      //     usersCurrency,
+      //     'USD',
+      //     1
+      //   );
+      // } else if (usersCurrency !== 'USD') {
+      //   //  console.log(usersCurrency);
+      //   exchangeRate = await currencyObj.convertCurrency(
+      //     'USD',
+      //     usersCurrency,
+      //     1
+      //   );
+      // }
+
+      // DEV: Disable currency conversion to avoid crashes.
+        // In dev we don’t rely on live exchange APIs.
         usersCurrency = 'USD';
-        //  console.log(usersCurrency);
-        exchangeRate = await currencyObj.convertCurrency(
-          usersCurrency,
-          'USD',
-          1
-        );
-      } else if (usersCurrency !== 'USD') {
-        //  console.log(usersCurrency);
-        exchangeRate = await currencyObj.convertCurrency(
-          'USD',
-          usersCurrency,
-          1
-        );
-      }
+         exchangeRate = 1;
+
+        // If later needed, re-enable CurrencyServices here
+        // const currencyObj = CurrencyServices;
+        // exchangeRate = await currencyObj.convertCurrency('USD', usersCurrency, 1);
 
       console.log('ExchangeRate: ' + exchangeRate);
       //set the users currency
@@ -168,7 +177,7 @@ class WalletController {
         await QueueService.createWallet(OrganisationId, 'organisation');
       }
       if (wallet) {
-        const MainWallet = wallet.toObject();
+      //  const MainWallet = wallet.toObject();
         // total_deposit = (total_deposit * exchangeRate).toFixed(2) || 0;
         // spend_for_campaign =
         //   (spend_for_campaign * exchangeRate).toFixed(2) || 0;
@@ -176,10 +185,24 @@ class WalletController {
         // MainWallet.fiat_balance = (balance * exchangeRate).toFixed(2);
         // MainWallet.address = user.address;
 
+        // total_deposit = total_deposit || 0;
+        // spend_for_campaign = spend_for_campaign || 0;
+        // MainWallet.balance = balance;
+        // MainWallet.fiat_balance = balance;
+        // MainWallet.address = user.address;
+
+        const MainWallet = wallet.toObject();
+
         total_deposit = total_deposit || 0;
         spend_for_campaign = spend_for_campaign || 0;
+
+        // keep blockchain token balance separate
         MainWallet.balance = balance;
-        MainWallet.fiat_balance = balance;
+
+        // keep FIAT balance from DB (what your dev Pay Now credits)
+        MainWallet.fiat_balance = Number(MainWallet.fiat_balance || 0);
+
+        // expose current address used on chain
         MainWallet.address = user.address;
 
         Response.setSuccess(HttpStatusCode.STATUS_OK, 'Main wallet deatils', {
@@ -255,21 +278,50 @@ class WalletController {
   static async fiatDeposit(req, res) {
     try {
       const data = SanitizeObject(req.body, ['amount', 'currency', 'method']);
-      const {organisation_id} = req.params;
+      const { organisation_id } = req.params;
+  
       if (!data.currency) data.currency = 'NGN';
       const CampaignId = req.body.CampaignId ? req.body.CampaignId : null;
-      const organisation = await OrganisationService.checkExistEmail(
-        req.user.email
-      );
-      const wallet = await WalletService.findMainOrganisationWallet(
-        organisation_id
-      );
+  
+      const organisation = await OrganisationService.checkExistEmail(req.user.email);
+      const wallet = await WalletService.findMainOrganisationWallet(organisation_id);
       if (!wallet) {
-        Response.setError(
-          HttpStatusCode.STATUS_RESOURCE_NOT_FOUND,
-          'Oganisation wallet not found.'
-        );
+        Response.setError(HttpStatusCode.STATUS_RESOURCE_NOT_FOUND, 'Oganisation wallet not found.');
+        return Response.send(res);
       }
+  
+      // ---- DEV MODE: credit instantly, do NOT talk to Paystack/Korapay ----
+      if ((process.env.PAYMENTS_MODE || 'dev') === 'dev') {
+        const amountN = Number(data.amount) || 0;
+        const currBal = Number(wallet.balance) || 0;
+  
+        await wallet.update({
+          balance: currBal + amountN,
+          fiat_balance: currBal + amountN,
+        });
+  
+        logger.info(`DEV deposit credited: ${amountN} ${data.currency} to org ${organisation_id}`);
+  
+        // Return a shape that the UI can safely consume
+        Response.setSuccess(
+          HttpStatusCode.STATUS_CREATED,
+          'Deposit completed (dev).',
+          {
+            dev: true,
+            reference: `DEV-${Date.now()}`,
+            amount: amountN,
+            currency: data.currency,
+            organisation_id,
+            new_balance: currBal + amountN,
+            authorization_url: null,         // keep keys present so UI never errors
+            access_code: null,
+            status: 'success',
+          }
+        );
+        return Response.send(res);
+      }
+  
+      // ---- REAL GATEWAYS (production) ----
       let response = null;
       if (data.method === 'paystack') {
         logger.info(`Initiating PayStack Transaction`);
@@ -289,19 +341,13 @@ class WalletController {
           data.currency
         );
       }
+  
       logger.info(`Initiated ${data.method} Transaction`);
-      Response.setSuccess(
-        HttpStatusCode.STATUS_CREATED,
-        'Deposit data generated.',
-        response
-      );
+      Response.setSuccess(HttpStatusCode.STATUS_CREATED, 'Deposit data generated.', response);
       return Response.send(res);
     } catch (error) {
-      logger.error(`Error Initiating PayStack Transaction: ${error}`);
-      Response.setError(
-        HttpStatusCode.STATUS_INTERNAL_SERVER_ERROR,
-        'Request failed. Please retry.'
-      );
+      logger.error(`Error Initiating Deposit: ${error}`);
+      Response.setError(HttpStatusCode.STATUS_INTERNAL_SERVER_ERROR, 'Request failed. Please retry.');
       return Response.send(res);
     }
   }

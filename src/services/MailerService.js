@@ -1,26 +1,29 @@
 const nodemailer = require('nodemailer');
 var hbs = require('nodemailer-express-handlebars');
-const {mailerConfig} = require('../config');
+const { mailerConfig } = require('../config'); // destructure correctly
 
 class MailerService {
   config = {};
   transporter;
   constructor() {
-    this.config = mailerConfig;
+    this.config = mailerConfig;   
+    // ✅ Debug log to confirm values
+    console.log("📧 Mailer using:", this.config);
+    console.log("host:", this.config.host, "port:", this.config.port);
+  
     this.transporter = nodemailer.createTransport({
-      host: this.config.host,
-      port: this.config.port,
-      auth: {
+      host: this.config.host,    // 127.0.0.1
+      port: this.config.port,    // 1025
+      secure: false,             // MailHog does not use SSL
+      auth: this.config.user && this.config.pass ? {
         user: this.config.user,
         pass: this.config.pass
-      },
-      secure: true,
+      } : undefined,             // Skip auth if empty
       tls: {
-        // do not fail on invalid certs
         rejectUnauthorized: false
       }
     });
-
+  
     this.transporter.use(
       "compile",
       hbs({
@@ -28,11 +31,11 @@ class MailerService {
           extname: ".handlebars",
           layoutsDir: "src/utils/emailTemplate/views/layouts/",
           partialsDir: "src/utils/emailTemplate/views/layouts/",
-          defaultLayout: "main.handlebars", 
+          defaultLayout: "main.handlebars",
         },
         viewPath: "src/utils/emailTemplate/views/",
         extName: ".handlebars",
-        cache: false, 
+        cache: false,
       })
     );
   }

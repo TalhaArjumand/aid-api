@@ -563,6 +563,15 @@ router
     CampaignController.fundApprovedBeneficiary
   );
 router
+  .route('/:organisation_id/campaigns/:campaign_id/approve-spending')
+  .post(
+    NgoAdminAuth,
+    ParamValidator.OrganisationId,
+    IsOrgMember,
+    CampaignValidator.campaignBelongsToOrganisation,
+    CampaignController.approveBeneficiariesToSpend
+  );
+router
   .route('/:organisation_id/:campaign_id/:token_type/tokens')
   .get(
     NgoAdminAuth,

@@ -1,5 +1,7 @@
 'use strict';
 const {Model} = require('sequelize');
+const {DEFAULT_FIAT_CURRENCY} = require('../config/currency');
+
 module.exports = (sequelize, DataTypes) => {
   class Wallet extends Model {
     /**
@@ -52,7 +54,10 @@ module.exports = (sequelize, DataTypes) => {
       balance: DataTypes.FLOAT,
       crypto_balance: DataTypes.FLOAT,
       fiat_balance: DataTypes.FLOAT,
-      local_currency: DataTypes.STRING
+      local_currency: {
+        type: DataTypes.STRING,
+        defaultValue: DEFAULT_FIAT_CURRENCY
+      }
     },
     {
       sequelize,

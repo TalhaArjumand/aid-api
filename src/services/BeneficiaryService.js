@@ -655,37 +655,31 @@ class BeneficiariesService {
   }
 
   static async beneficiaryChart(BeneficiaryId, period) {
+    const allowed = ['daily', 'weekly', 'monthly', 'yearly'];
+    const p = allowed.includes(period) ? period : 'yearly';
+  
+    const since =
+      p === 'daily'   ? moment().subtract(1, 'days')   :
+      p === 'weekly'  ? moment().subtract(7, 'days')   :
+      p === 'monthly' ? moment().subtract(1, 'months') :
+                        moment().subtract(1, 'years');
+  
     return Transaction.findAndCountAll({
       where: {
         BeneficiaryId,
-        createdAt: {
-          [Op.gte]:
-            period === 'daily'
-              ? moment().subtract(1, 'days').toDate()
-              : period === 'weekly'
-              ? moment().subtract(7, 'days').toDate()
-              : period === 'monthly'
-              ? moment().subtract(1, 'months').toDate()
-              : period === 'yearly'
-              ? moment().subtract(1, 'years').toDate()
-              : null
-        }
+        createdAt: { [Op.gte]: since.toDate() }
       },
       include: [
         {
           model: Wallet,
           as: 'SenderWallet',
-          attributes: {
-            exclude: walletConst.walletExcludes
-          },
+          attributes: { exclude: walletConst.walletExcludes },
           include: ['Campaign']
         },
         {
           model: Wallet,
           as: 'ReceiverWallet',
-          attributes: {
-            exclude: walletConst.walletExcludes
-          }
+          attributes: { exclude: walletConst.walletExcludes }
         },
         {
           model: User,
@@ -695,7 +689,6 @@ class BeneficiariesService {
       ]
     });
   }
-
   //get all beneficiaries by marital status
 
   static async findOrganisationVendorTransactions(

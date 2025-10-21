@@ -891,14 +891,15 @@ class AuthController {
               process.env.SECRET_KEY,
               {expiresIn: '24hr'}
             );
-            const verifyLink =
-              data.host_url + '/email-verification/?confirmationCode=' + token;
+            // EMAIL VERIFICATION COMMENTED OUT FOR DEVELOPMENT MODE
+            // const verifyLink =
+            //   data.host_url + '/email-verification/?confirmationCode=' + token;
 
-            const sent = await MailerService.sendEmailVerification(
-              data.email,
-              data.organisation_name || data.first_name + ' ' + data.last_name,
-              verifyLink
-            );
+            // const sent = await MailerService.sendEmailVerification(
+            //   data.email,
+            //   data.organisation_name || data.first_name + ' ' + data.last_name,
+            //   verifyLink
+            // );
             Response.setSuccess(201, 'NGO and User registered successfully', {
               user: user.toObject()
             });
@@ -1042,26 +1043,31 @@ class AuthController {
               }
             );
 
-            const verifyLink =
-              data.host_url + '/email-verification/?confirmationCode=' + token;
-            //else resend token to user
-            MailerService.sendEmailVerification(
-              data.email,
-              orgDetails.name,
-              verifyLink
-            )
-              .then(() => {
-                Response.setSuccess(
-                  HttpStatusCode.STATUS_OK,
-                  'A new confirmation token sent to the provided email address ',
-                  {email: data.email}
-                );
-                return Response.send(res);
-              })
-              .catch(err => {
-                Response.setError(500, err);
-                return Response.send(res);
-              });
+            // EMAIL VERIFICATION COMMENTED OUT FOR DEVELOPMENT MODE
+            // const verifyLink =
+            //   data.host_url + '/email-verification/?confirmationCode=' + token;
+            // //else resend token to user
+            // MailerService.sendEmailVerification(
+            //   data.email,
+            //   orgDetails.name,
+            //   verifyLink
+            // )
+            //   .then(() => {
+            //     Response.setSuccess(
+            //       HttpStatusCode.STATUS_OK,
+            //       'A new confirmation token sent to the provided email address ',
+            //       {email: data.email}
+            //     );
+            //     return Response.send(res);
+            //   })
+            
+            // In development mode, just return success without sending email
+            Response.setSuccess(
+              HttpStatusCode.STATUS_OK,
+              'Email verification bypassed in development mode',
+              {email: data.email}
+            );
+            return Response.send(res);
           }
         }
       }
@@ -1127,7 +1133,9 @@ class AuthController {
         );
         return Response.send(res);
       }
-      if (user && user.is_email_verified === false) {
+      // In development, allow login without email verification to ease local testing
+      const isDev = process.env.NODE_ENV === 'development';
+      if (user && user.is_email_verified === false && !isDev) {
         Response.setError(
           HttpStatusCode.STATUS_UNAUTHORIZED,
           'Access Denied, Email Account has not been Verified.'

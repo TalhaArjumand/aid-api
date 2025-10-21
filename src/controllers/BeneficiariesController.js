@@ -956,90 +956,78 @@ class BeneficiariesController {
     }
   }
 
+  
   static async beneficiaryChart(req, res) {
-    const {period} = req.params;
+    const { period } = req.params;
+  
     try {
-      const transactions = await BeneficiaryService.beneficiaryChart(
-        req.user.id,
-        period
-      );
-      if (transactions.length <= 0) {
-        Response.setSuccess(
-          HttpStatusCode.STATUS_OK,
-          'No Transaction Found.',
-          transactions
-        );
+      const transactions = await BeneficiaryService.beneficiaryChart(req.user.id, period);
+      // Guard for empty/invalid results
+      const rows = (transactions && Array.isArray(transactions.rows)) ? transactions.rows : [];
+      const count = Number.isInteger(transactions?.count) ? transactions.count : rows.length;
+  
+      if (rows.length === 0) {
+        // Always return 200 with an empty payload, not 500
+        Response.setSuccess(HttpStatusCode.STATUS_OK, 'No Transaction Found.', {
+          periods: [],
+          transactions: [],
+          count
+        });
         return Response.send(res);
       }
-
-      for (let transaction of transactions.rows) {
-        if (transaction.narration === 'Approve Beneficiary Funding') {
-          const ngo = await OrganisationService.checkExist(
-            transaction.OrganisationId
-          );
-          transaction.dataValues.narration = `Payment from (${
-            ngo.name || ngo.email
-          })`;
-
-          transaction.dataValues.transaction_type = 'credit';
+  
+      // Enrich rows safely
+      for (const tx of rows) {
+        if (tx.narration === 'Approve Beneficiary Funding') {
+          const ngo = await OrganisationService.checkExist(tx.OrganisationId);
+          tx.dataValues.narration = `Payment from (${ngo.name || ngo.email})`;
+          tx.dataValues.transaction_type = 'credit';
         }
-        if (transaction.narration === 'Vendor Order') {
-          const vendor = await UserService.getAUser(transaction.VendorId);
-          transaction.dataValues.narration = `Payment to (${
-            vendor.first_name + ' ' + vendor.last_name
-          })`;
-          transaction.dataValues.transaction_type = 'debit';
+  
+        if (tx.narration === 'Vendor Order') {
+          const vendor = await UserService.getAUser(tx.VendorId);
+          tx.dataValues.narration = `Payment to (${vendor.first_name} ${vendor.last_name})`;
+          tx.dataValues.transaction_type = 'debit';
         }
-        if (
-          transaction.transaction_type === 'transfer' &&
-          transaction.SenderWallet.UserId === req.user.id
-        ) {
-          const beneficiary = await UserService.getAUser(
-            transaction.ReceiverWallet.UserId
-          );
-          transaction.dataValues.narration = `Payment to (${
-            beneficiary.first_name + ' ' + beneficiary.last_name
-          })`;
-          transaction.dataValues.transaction_type = 'debit';
+  
+        if (tx.transaction_type === 'transfer' && tx?.SenderWallet?.UserId === req.user.id) {
+          const beneficiary = await UserService.getAUser(tx?.ReceiverWallet?.UserId);
+          tx.dataValues.narration = `Payment to (${beneficiary.first_name} ${beneficiary.last_name})`;
+          tx.dataValues.transaction_type = 'debit';
         }
-        if (
-          transaction.transaction_type === 'transfer' &&
-          transaction.SenderWallet.UserId !== req.user.id
-        ) {
-          const beneficiary = await UserService.getAUser(
-            transaction.SenderWallet.UserId
-          );
-          transaction.dataValues.narration = `Payment from (${
-            beneficiary.first_name + ' ' + beneficiary.last_name
-          })`;
-          transaction.dataValues.transaction_type = 'credit';
+  
+        if (tx.transaction_type === 'transfer' && tx?.SenderWallet?.UserId !== req.user.id) {
+          const beneficiary = await UserService.getAUser(tx?.SenderWallet?.UserId);
+          tx.dataValues.narration = `Payment from (${beneficiary.first_name} ${beneficiary.last_name})`;
+          tx.dataValues.transaction_type = 'credit';
         }
-        if (transaction.dataValues.ReceiverWallet === null)
-          delete transaction.dataValues.ReceiverWallet;
-        if (transaction.dataValues.SenderWallet === null)
-          delete transaction.dataValues.SenderWallet;
+  
+        if (tx.dataValues.ReceiverWallet == null) delete tx.dataValues.ReceiverWallet;
+        if (tx.dataValues.SenderWallet == null) delete tx.dataValues.SenderWallet;
+  
+        // Optional: attach explorer link if a wallet is present
+        const recvAddr = tx.dataValues.ReceiverWallet?.address;
+        const sendAddr = tx.dataValues.SenderWallet?.address;
+        if (recvAddr) {
+          tx.dataValues.BlockchainXp_Link =
+            `https://testnet.bscscan.com/token/0xa31d8a40a2127babad4935163ff7ce0bbd42a377?a=${recvAddr}`;
+        } else if (sendAddr) {
+          tx.dataValues.BlockchainXp_Link =
+            `https://testnet.bscscan.com/token/0xa31d8a40a2127babad4935163ff7ce0bbd42a377?a=${sendAddr}`;
+        }
       }
-
-      transactions.rows.forEach(transaction => {
-        if (typeof transaction.dataValues.ReceiverWallet !== 'undefined') {
-          transaction.dataValues.BlockchainXp_Link = `https://testnet.bscscan.com/token/0xa31d8a40a2127babad4935163ff7ce0bbd42a377?a=
-         ${transaction.ReceiverWallet.address}`;
-        }
-        if (typeof transaction.dataValues.SenderWallet !== 'undefined') {
-          transaction.dataValues.BlockchainXp_Link = `https://testnet.bscscan.com/token/0xa31d8a40a2127babad4935163ff7ce0bbd42a377?a=
-         ${transaction.SenderWallet.address}`;
-        }
-      });
-      const periods = transactions.rows.map(period =>
-        moment(period.createdAt).format('ddd')
-      );
-
+  
+      const periods = rows.map(r => moment(r.createdAt).format('ddd'));
+  
       Response.setSuccess(HttpStatusCode.STATUS_OK, 'Transaction Recieved.', {
         periods,
-        transactions
+        transactions: rows,   // return the actual array
+        count
       });
       return Response.send(res);
     } catch (error) {
+      // Log what actually failed so 500s are debuggable
+      console.error('beneficiaryChart error:', error);
       Response.setError(
         HttpStatusCode.STATUS_INTERNAL_SERVER_ERROR,
         'Internal server error. Please try again later.',

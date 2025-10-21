@@ -430,6 +430,127 @@ class OrderController {
     }
   }
 
+  /**
+   * Scan & Pay from uploaded QR code
+   * POST /v1/vendors/orders/scan-pay
+   */
+  static async scanPay(req, res) {
+    try {
+      const { campaign_id, amount, qr_payload } = req.body;
+      const beneficiary_id = req.user.id;
+
+      Logger.info('Scan & Pay request:', { campaign_id, amount, beneficiary_id, qr_payload });
+
+      // Validate QR payload matches campaign_id
+      if (qr_payload.campaignId !== parseInt(campaign_id)) {
+        Response.setError(HttpStatusCode.STATUS_BAD_REQUEST, 'QR code campaign mismatch');
+        return Response.send(res);
+      }
+
+      // Validate beneficiary belongs to campaign
+      const beneficiary = await BeneficiariesService.getApprovedBeneficiary(campaign_id, beneficiary_id);
+      if (!beneficiary) {
+        Response.setError(HttpStatusCode.STATUS_BAD_REQUEST, 'Beneficiary not found in campaign');
+        return Response.send(res);
+      }
+
+      // Validate vendor exists and is active in campaign
+      const campaign = await CampaignService.getCampaignById(campaign_id);
+      if (!campaign) {
+        Response.setError(HttpStatusCode.STATUS_BAD_REQUEST, 'Campaign not found');
+        return Response.send(res);
+      }
+
+      // Get wallets
+      const [campaignWallet, vendorWallet, beneficiaryWallet] = await Promise.all([
+        WalletService.findSingleWallet({
+          CampaignId: campaign_id,
+          UserId: null
+        }),
+        WalletService.findSingleWallet({ UserId: qr_payload.vendorId }),
+        WalletService.findUserCampaignWallet(beneficiary_id, campaign_id)
+      ]);
+
+      if (!campaignWallet || !vendorWallet || !beneficiaryWallet) {
+        Response.setError(HttpStatusCode.STATUS_BAD_REQUEST, 'Required wallets not found');
+        return Response.send(res);
+      }
+
+      // Check allowance for non-item campaigns
+      if (campaign.type !== 'item') {
+        const campaign_token = await BlockchainService.setUserKeypair(`campaign_${campaign_id}`);
+        const beneficiary_token = await BlockchainService.setUserKeypair(`user_${beneficiary_id}campaign_${campaign_id}`);
+        
+        const token = await BlockchainService.allowance(
+          campaign_token.address,
+          beneficiary_token.address
+        );
+
+        const allowance = Number(token.Allowed.split(',').join(''));
+        
+        if (allowance < amount) {
+          Response.setError(
+            HttpStatusCode.STATUS_CONFLICT,
+            'Insufficient allowance. Ask NGO/campaign to approve spending.'
+          );
+          return Response.send(res);
+        }
+      } else {
+        // For item campaigns, check beneficiary wallet balance
+        if (beneficiaryWallet.balance < amount) {
+          Response.setError(HttpStatusCode.STATUS_BAD_REQUEST, 'Insufficient wallet balance');
+          return Response.send(res);
+        }
+      }
+
+      // Get or create order record for tracking
+      const orderRef = qr_payload.orderRef;
+      
+      // Fetch the actual order from database
+      const actualOrder = await VendorService.getOrder({ reference: orderRef });
+      
+      if (!actualOrder || !actualOrder.order) {
+        Response.setError(HttpStatusCode.STATUS_BAD_REQUEST, 'Order not found for QR reference');
+        return Response.send(res);
+      }
+      
+      const order = actualOrder.order;
+      
+      // Verify order belongs to the correct campaign and vendor
+      if (order.CampaignId !== campaign_id || order.VendorId !== qr_payload.vendorId) {
+        Response.setError(HttpStatusCode.STATUS_BAD_REQUEST, 'Order does not match QR code details');
+        return Response.send(res);
+      }
+
+      // Process the order using existing flow
+      await OrderService.processOrder(
+        beneficiaryWallet,
+        vendorWallet,
+        campaignWallet,
+        order,
+        order.Vendor,
+        amount,
+        campaign
+      );
+
+      Response.setSuccess(HttpStatusCode.STATUS_OK, 'Payment processing', {
+        status: 'processing',
+        txRef: orderRef,
+        orderRef: orderRef,
+        amount: amount
+      });
+      return Response.send(res);
+
+    } catch (error) {
+      Logger.error('Scan & Pay error:', error);
+      Response.setError(
+        HttpStatusCode.STATUS_INTERNAL_SERVER_ERROR,
+        'Payment processing failed: ' + error.message
+      );
+      return Response.send(res);
+    }
+  }
+
   static async productPurchasedByGender(req, res) {
     try {
       const maleCount = {};

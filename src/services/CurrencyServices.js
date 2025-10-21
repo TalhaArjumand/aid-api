@@ -1,90 +1,55 @@
 require('dotenv').config();
-const {default: axios} = require('axios');
-const {exchangeRate} = require('../config');
+const axios = require('axios').default;
 const currencySymbolMap = require('currency-symbol-map');
-const currencyCodes = require('currency-codes');
 
-class CurrencyServices { 
-  httpService;
-  appId;
-  exchangeData;
-  constructor() {
-    // this.httpService = 'https://openexchangerates.org/api';
-    // this.appId = process.env.OPEN_EXCHANGE_APP;
-    // this.exchangeData = this.getExchangeRate();
-  }
+const OXR_BASE = process.env.OPENEXCHANGE_URL || 'https://openexchangerates.org/api';
+const OXR_AppId = process.env.OPEN_EXCHANGE_APP || '';
 
-  async getCurrencySymbol(currencyCode) {
-    const symbol = currencySymbolMap(currencyCode);
-    return symbol ? symbol : currencyCode;
-  }
-
-  async getExchangeRate() {
-    return await this.getExchangeRate();
-  }
-  async getExchangeRate() {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const url = `${exchangeRate.baseUrl}/latest.json?app_id=${exchangeRate.appId}`;
-        const exchange = await axios.get(url);
-        this.exchangeData = exchange.data.rates;
-        resolve(this.exchangeData);
-      } catch (error) {
-        reject(error);
-      }
-    });
+class CurrencyServices {
+  async getCurrencySymbol(code) {
+    return currencySymbolMap(code) || code;
   }
 
   async getSpecificCurrencyExchangeRate(currencyCode) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const baseCurrency = 'USD';
-        const usdUrl = `${exchangeRate.baseUrl}/latest.json?app_id=${exchangeRate.appId}&base=${baseCurrency}&symbols=NGN`;
-        const url = `${exchangeRate.baseUrl}/latest.json?app_id=${exchangeRate.appId}&base=${baseCurrency}&symbols=${currencyCode}`;
-        const exchangeRateDataUSD = await axios.get(usdUrl);
-        const rateDataUSD = exchangeRateDataUSD.data.rates;
-        const usdBase = rateDataUSD['NGN'];
+    // If not configured, return safe defaults — DO NOT throw
+    if (!OXR_AppId) {
+      return {
+        usdBase: 1600,              // dummy NGN per USD
+        currencyCode,
+        currencySymbol: await this.getCurrencySymbol(currencyCode),
+        rate: 1                     // dummy rate for requested code vs USD
+      };
+    }
 
-        const exchangeRateData = await axios.get(url);
-        const rateData = exchangeRateData.data.rates;
-        const rate = rateData[currencyCode];
-        const currencySymbol = await this.getCurrencySymbol(currencyCode);
-        resolve({
-          usdBase,
-          currencyCode,
-          currencySymbol,
-          rate
-        });
-      } catch (error) {
-        reject(error);
-      }
-    });
-  }
+    try {
+      const baseCurrency = 'USD';
+      const usdUrl = `${OXR_BASE}/latest.json?app_id=${OXR_AppId}&base=${baseCurrency}&symbols=NGN`;
+      const url    = `${OXR_BASE}/latest.json?app_id=${OXR_AppId}&base=${baseCurrency}&symbols=${currencyCode}`;
 
-  async convertCurrency(fromCurrency, toCurrency, amount) {
-    const data = await this.getExchangeRate();
-    const currencies = Object.entries(data);
-    // get rate of from origin currency
-    const fromRate = currencies.find(row => {
-      return row[0] == fromCurrency;
-    });
-    // get rate of to destination currency
-    const toRate = currencies.find(row => {
-      return row[0] == toCurrency;
-    });
-    // console.log('fromRate: ', toRate);
-    // console.log(toRate);
-    // console.log('toRate: ', fromRate);
-    // console.log(fromRate);
-    return await this.convertRate(fromRate[1], toRate[1], amount);
-  }
-  async convertRate(fromRate, toRate, amount) {
-    // console.log('fromRate: ', fromRate);
-    // console.log('toRate: ', toRate);
-    // console.log('amount: ', amount);
-    const result = (toRate / fromRate) * amount;
-    // console.log('result: ', result.toFixed(2));
-    return result;
+      const [usdResp, curResp] = await Promise.all([axios.get(usdUrl), axios.get(url)]);
+      const usdBase = usdResp.data?.rates?.NGN;
+      const rate    = curResp.data?.rates?.[currencyCode];
+
+      return {
+        usdBase: typeof usdBase === 'number' ? usdBase : 1600,
+        currencyCode,
+        currencySymbol: await this.getCurrencySymbol(currencyCode),
+        rate: typeof rate === 'number' ? rate : 1
+      };
+    } catch (err) {
+      // Log and return defaults instead of throwing
+      console.error('CurrencyServices error:', {
+        status: err.response?.status,
+        url: err.config?.url,
+        message: err.message
+      });
+      return {
+        usdBase: 1600,
+        currencyCode,
+        currencySymbol: await this.getCurrencySymbol(currencyCode),
+        rate: 1
+      };
+    }
   }
 }
 

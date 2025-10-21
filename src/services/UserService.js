@@ -1,9 +1,11 @@
 const {User, BankAccount, OrganisationMembers, Liveness} = require('../models');
-const axios = require('axios');
-const Axios = axios.create();
+// ✅ new
+const Axios = require('../libs/Axios');
 const {AclRoles} = require('../utils');
 const {Logger} = require('../libs');
 const {userConst} = require('../constants');
+
+console.log('👉 UserService using Axios baseURL:', Axios.defaults.baseURL);
 
 class UserService {
   static async createUser(data) {

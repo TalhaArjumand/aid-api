@@ -1,7 +1,9 @@
-require('dotenv').config();
+//require('dotenv').config();
 const fs = require('fs');
 // const rdsCert = fs.readFileSync('./rdsCert.pem');
 const tls = require('tls');
+const envPath = process.env.NODE_ENV === 'test' ? '.env.test' : '.env';
+require('dotenv').config({ path: envPath });
 
 const config = {
   DB_NAME: process.env.DB_NAME,

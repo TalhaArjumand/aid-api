@@ -9,6 +9,18 @@ const sha256 = require('simple-sha256');
 const fs = require('fs');
 const path = require('path'); // ✅ Required for safe path resolution
 
+// ──────────────────────────────────────────────────────────────
+// Safe error-code extractor – never throws
+function errCode(err) {
+  return (
+    err?.response?.data?.message?.code ||   // legacy token API format
+    err?.response?.data?.error?.code   ||   // Besu JSON-RPC {error:{code}}
+    err?.error?.code                    ||   // ethers.js errors
+    err?.code                           ||   // node / axios codes
+    'UNKNOWN_ERROR'
+  );
+}
+// ──────────────────────────────────────────────────────────────
 const {switchWallet} = require('../config');
 
 const { getOpsContract, getTokenContract } = require(path.join(__dirname, "../../../chats-blockchain/src/resources/web3config"));
@@ -38,6 +50,18 @@ const {SwitchToken} = require('../models');
 const {Encryption, Logger, RabbitMq} = require('../libs');
 const AwsUploadService = require('./AwsUploadService');
 const {Message} = require('@droidsolutions-oss/amqp-ts');
+
+// Helper function to get ERC-20 token balance
+async function tokenBalance(tokenAddress, holderAddress) {
+  const provider = new ethers.providers.JsonRpcProvider(process.env.RPC_URL || process.env.BLOCKCHAINSERV);
+  const erc20Abi = ["function balanceOf(address) view returns (uint256)", "function decimals() view returns (uint8)"];
+  const t = new ethers.Contract(tokenAddress, erc20Abi, provider);
+  const [raw, dec] = await Promise.all([
+    t.balanceOf(holderAddress),
+    t.decimals().catch(()=>18)
+  ]);
+  return { raw, decimals: dec };
+}
 const QueueService = require('./QueueService');
 
 const provider = new ethers.providers.StaticJsonRpcProvider(
@@ -45,6 +69,13 @@ const provider = new ethers.providers.StaticJsonRpcProvider(
   { name: "besu-local", chainId: 1337 }
 );
 
+// src/services/BlockchainService.js  (add near top, after provider init)
+
+function getChatsContract(readOnly = true, signer = null) {
+  const iface = new ethers.Contract(tokenConfig.address, tokenConfig.abi,
+                                    readOnly ? provider : signer);
+  return iface;
+}
 // Optional log to confirm config
 console.log("🧠 Provider connected to:", provider.connection.url);
 
@@ -514,59 +545,71 @@ class BlockchainService {
   static async mintToken(mintTo, amount, message, type) {
     try {
       Logger.info(`[MintToken] Minting ${amount} tokens to ${mintTo}`);
-
-      const provider = new ethers.providers.JsonRpcProvider(process.env.RPC_URL);
-
-      const adminPrivateKey = process.env.ADMIN_PASS_TEST || process.env.ADMIN_PASS;
+  
+      // ✅ use the global provider defined at the top of this file
+      const adminPrivateKey =
+        process.env.ADMIN_PASS_TEST || process.env.ADMIN_PASS;
       if (!adminPrivateKey) throw new Error('Admin private key is missing from .env');
-
-      const adminWallet = new ethers.Wallet(adminPrivateKey, provider);
+  
+      const adminWallet   = new ethers.Wallet(adminPrivateKey, provider);
       const tokenContract = getTokenContract.connect(adminWallet);
-
-      const mintAmount = ethers.utils.parseUnits(amount.toString(), 6); // 6 decimals
-
-      // Optional: Estimate gas
-      const gasEstimate = await tokenContract.estimateGas.mint(mintAmount, mintTo).catch(() => null);
-
-      const tx = await tokenContract.mint(mintAmount, mintTo, {
-        gasLimit: gasEstimate || 500_000
-      });
-
-      const receipt = await tx.wait();
-
-      Logger.info(`[MintToken] Mint successful. TxHash: ${receipt.transactionHash}`);
-
-      return {
-        status: true,
-        Minted: receipt.transactionHash,
-        to: mintTo,
-        amount
+      const mintAmount    = ethers.utils.parseUnits(amount.toString(), 6); // 6 decimals
+  
+      // Small helper to send with a specific nonce
+      const sendMint = async (nonceToUse) => {
+        const gasEstimate = await tokenContract.estimateGas
+          .mint(mintAmount, mintTo)
+          .catch(() => null);
+  
+        const tx = await tokenContract.mint(mintAmount, mintTo, {
+          gasLimit : gasEstimate || 500_000,
+          // gasPrice is optional on Besu; keep if your node expects it
+          // gasPrice : ethers.utils.parseUnits('2', 'gwei'),
+          nonce    : nonceToUse
+        });
+  
+        Logger.info(`[MintToken] Sent tx: ${tx.hash}`);
+        const receipt = await tx.wait();
+        Logger.info(`[MintToken] Mint successful. TxHash: ${receipt.transactionHash}`);
+        return { status: true, Minted: receipt.transactionHash, to: mintTo, amount };
       };
+  
+      // 1) get "pending" nonce so we include any in-flight txs
+      let nonce = await provider.getTransactionCount(adminWallet.address, 'pending');
+  
+      try {
+        return await sendMint(nonce);
+      } catch (err) {
+        const code = err?.error?.code || err?.code;
+        // 2) if nonce complaint, refresh once and retry
+        if (code === -32000 || /nonce/i.test(err?.message || '')) {
+          Logger.info('[MintToken] Retrying with fresh pending nonce…');
+          const fresh = await provider.getTransactionCount(adminWallet.address, 'pending');
+          if (fresh !== nonce) {
+            return await sendMint(fresh);
+          }
+        }
+        throw err;
+      }
     } catch (error) {
       Logger.error(`[MintToken] Mint failed: ${error.message}`);
-
       const errorCode = error?.error?.code || error?.code || 'UNKNOWN_ERROR';
       Logger.info(`[MintToken] Error code: ${errorCode}`);
-
-      // Gas recovery queue fallback
+  
+      // Gas recovery queue fallback (kept as-is)
       if (
         errorCode === 'REPLACEMENT_UNDERPRICED' ||
         errorCode === 'UNPREDICTABLE_GAS_LIMIT' ||
         errorCode === 'INSUFFICIENT_FUNDS'
       ) {
-        const keys = {
-          password: '',
-          address: mintTo,
-          amount
-        };
-
+        const keys = { password: '', address: mintTo, amount };
         if (type === 'ngo') {
           await QueueService.increaseGasForMinting(keys, message);
         } else {
           await QueueService.gasFundCampaignWithCrypto(keys, message);
         }
       }
-
+  
       throw new Error(`[MintToken] Failed: ${errorCode}`);
     }
   }
@@ -675,119 +718,129 @@ class BlockchainService {
     });
   }
 
-  static async transferTo(senderPass, receiverAdd, amount, message, type) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const {data} = await Axios.post(
-          `${tokenConfig.baseURL}/txn/transfer/${senderPass}/${receiverAdd}/${amount}`
-        );
-        Logger.info('Transferred to campaign wallet');
-        resolve(data);
-      } catch (error) {
-        Logger.error(
-          `Error transferring to campaign wallet: ${JSON.stringify(
-            error.response.data
-          )}`
-        );
-        if (
-          error.response.data.message.code === 'REPLACEMENT_UNDERPRICED' ||
-          error.response.data.message.code === 'UNPREDICTABLE_GAS_LIMIT' ||
-          error.response.data.message.code === 'INSUFFICIENT_FUNDS'
-        ) {
-          const keys = {
-            password: senderPass,
-            receiverAdd,
-            amount: amount.toString()
-          };
-          if (type === 'fundCampaign') {
-            await QueueService.increaseTransferCampaignGas(keys, message);
-          }
-          if (type === 'PBFundB') {
-            await QueueService.increaseTransferPersonalBeneficiaryGas(
-              keys,
-              message
-            );
-          }
-          if (type === 'withHoldFunds') {
-            await QueueService.increaseGasWithHoldFunds(keys, message);
-          }
-        }
-        reject(error);
+// ───────────────────────── transferTo ─────────────────────────
+static async transferTo(senderPass, receiverAdd, amount, message, type) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      /* 1️⃣  Build signer & contract */
+      const wallet   = new ethers.Wallet(senderPass, provider);          // ← senderPass == private-key
+      const contract = getChatsContract(false, wallet);                 // writable contract
+      const value    = ethers.utils.parseUnits(amount.toString(), 6);   // CHATS uses 6 decimals
+
+      /* 2️⃣  Gas + nonce */
+      const gas  = await contract.estimateGas.transfer(receiverAdd, value).catch(() => null);
+      const nonce = await provider.getTransactionCount(wallet.address, 'latest');
+
+      /* 3️⃣  Send & wait */
+      const tx  = await contract.transfer(receiverAdd, value, {
+        gasLimit : gas || 200_000,
+        gasPrice : ethers.utils.parseUnits('2', 'gwei'),
+        nonce
+      });
+      Logger.info(`Transferred to campaign wallet → ${tx.hash}`);
+
+      const receipt = await tx.wait();
+      resolve({ Transferred: receipt.transactionHash });
+
+    } catch (error) {
+      Logger.error(`Error transferring to campaign wallet: ${error.message}`);
+
+      /* 4️⃣  Retry queues (unchanged) */
+      const code = errCode(error);
+      if (code === 'REPLACEMENT_UNDERPRICED' ||
+          code === 'UNPREDICTABLE_GAS_LIMIT' ||
+          code === 'INSUFFICIENT_FUNDS') {
+
+        const keys = { password: senderPass, receiverAdd, amount: amount.toString() };
+
+        if (type === 'fundCampaign')
+          await QueueService.increaseTransferCampaignGas(keys, message);
+        if (type === 'PBFundB')
+          await QueueService.increaseTransferPersonalBeneficiaryGas(keys, message);
+        if (type === 'withHoldFunds')
+          await QueueService.increaseGasWithHoldFunds(keys, message);
       }
-    });
-  }
+      reject(error);
+    }
+  });
+}
 
-  static async transferFrom(
-    tokenownerAdd,
-    receiver,
-    spenderPass,
-    amount,
-    message,
-    type
-  ) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        Logger.info('Transferring funds from..');
-        const {data} = await Axios.post(
-          `${tokenConfig.baseURL}/txn/transferfrom/${tokenownerAdd}/${receiver}/${spenderPass}/${amount}`
-        );
-        Logger.info('Success transferring funds from');
-        resolve(data);
-      } catch (error) {
-        Logger.info(
-          `Error transferring funds from:  ${JSON.stringify(
-            error.response.data
-          )}`
-        );
+// ──────────────────────── transferFrom ────────────────────────
+static async transferFrom(
+  tokenownerAdd,   // “from”
+  receiver,        // “to”
+  spenderPass,     // private-key of approved spender
+  amount,
+  message,
+  type
+) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      /* 1️⃣  Build signer & contract */
+      const spender  = new ethers.Wallet(spenderPass, provider);
+      const contract = getChatsContract(false, spender);
+      const value    = ethers.utils.parseUnits(amount.toString(), 6);
 
-        if (
-          error.response.data.message.code === 'REPLACEMENT_UNDERPRICED' ||
-          error.response.data.message.code === 'UNPREDICTABLE_GAS_LIMIT' ||
-          error.response.data.message.code === 'INSUFFICIENT_FUNDS'
-        ) {
-          const keys = {
-            password: spenderPass,
-            tokenownerAdd,
-            receiverAdd: receiver,
-            amount: amount.toString()
-          };
-          if (type === 'BFundB') {
-            await QueueService.increaseTransferBeneficiaryGas(keys, message);
-          }
-          if (type === 'BWithdrawal') {
-            await QueueService.increaseGasForBWithdrawal(keys, message);
-          }
-          if (type === 'vendorOrder') {
-            await QueueService.increaseGasFeeVTransferFrom(keys, message);
-          }
-        }
+            // 🧩 Debug: identify who is paying gas
+            Logger.info(`[transferFrom] Token Owner (from): ${tokenownerAdd}`);
+            Logger.info(`[transferFrom] Receiver (to): ${receiver}`);
+            Logger.info(`[transferFrom] Spender Address (signer): ${spender.address}`);
+      
+            const spenderBal = await provider.getBalance(spender.address);
+            Logger.info(`[transferFrom] Spender ETH Balance: ${ethers.utils.formatEther(spenderBal)} ETH`);
 
-        reject(error);
+      /* 2️⃣  Gas */
+      const gas = await contract.estimateGas.transferFrom(tokenownerAdd, receiver, value)
+                         .catch(() => null);
+
+      /* 3️⃣  Send & wait */
+      const tx  = await contract.transferFrom(tokenownerAdd, receiver, value, {
+        gasLimit : gas || 250_000,
+        gasPrice : ethers.utils.parseUnits('2', 'gwei')
+      });
+      Logger.info(`Success transferring funds from → ${tx.hash}`);
+
+      const receipt = await tx.wait();
+      resolve({ Transferred: receipt.transactionHash });
+
+    } catch (error) {
+      Logger.info(`Error transferring funds from: ${error.message}`);
+
+      const code = errCode(error);
+      if (code === 'REPLACEMENT_UNDERPRICED' ||
+          code === 'UNPREDICTABLE_GAS_LIMIT' ||
+          code === 'INSUFFICIENT_FUNDS') {
+
+        const keys = {
+          password     : spenderPass,
+          tokenownerAdd,
+          receiverAdd  : receiver,
+          amount       : amount.toString()
+        };
+
+        if (type === 'BFundB')
+          await QueueService.increaseTransferBeneficiaryGas(keys, message);
+        if (type === 'BWithdrawal')
+          await QueueService.increaseGasForBWithdrawal(keys, message);
+        if (type === 'vendorOrder')
+          await QueueService.increaseGasFeeVTransferFrom(keys, message);
       }
-    });
-  }
+      reject(error);
+    }
+  });
+}
+   static async allowance(tokenOwner, spenderAddr) {
+       try {
+         const contract     = getChatsContract();
+         const rawAllowance = await contract.allowance(tokenOwner, spenderAddr);
+         const formatted    = ethers.utils.formatUnits(rawAllowance, 6);
+         return { Allowed: formatted };
+       } catch (err) {
+         Logger.warn(`[allowance] read failed – ${err.message}`);
+         return { Allowed: "0" };
+       }
+     }
 
-  static async allowance(tokenOwner, spenderAddr) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const {data} = await Axios.get(
-          `${tokenConfig.baseURL}/account/allowance/${tokenOwner}/${spenderAddr}`
-        );
-        resolve(data);
-      } catch (error) {
-        error.response.data.message.code ===
-        ('REPLACEMENT_UNDERPRICED' ||
-          'UNPREDICTABLE_GAS_LIMIT' ||
-          'INSUFFICIENT_FUNDS')
-          ? await this.reRunContract('token', 'allowance', {
-              tokenOwner,
-              spenderAddr
-            })
-          : null;
-        reject(error);
-      }
-    });
-  }
   static async nftBalance(address, contractIndex) {
     return new Promise(async (resolve, reject) => {
       try {
@@ -803,26 +856,19 @@ class BlockchainService {
       }
     });
   }
-  static async balance(address) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const {data} = await Axios.get(
-          `${tokenConfig.baseURL}/account/balance/${address}`
-        );
-        resolve(data);
-      } catch (error) {
-        error.response.data.message.code ===
-        ('REPLACEMENT_UNDERPRICED' ||
-          'UNPREDICTABLE_GAS_LIMIT' ||
-          'INSUFFICIENT_FUNDS')
-          ? await this.reRunContract('token', 'balance', {
-              address
-            })
-          : null;
-        reject(error);
-      }
-    });
-  }
+
+   static async balance(address) {
+       try {
+         const contract   = getChatsContract();
+         const rawBalance = await contract.balanceOf(address);
+         const formatted  = ethers.utils.formatUnits(rawBalance, 6); // CHATS = 6 dec
+         return { Balance: formatted };
+       } catch (err) {
+         Logger.warn(`[balance] read failed – ${err.message}`);
+         /* keep the structure the callers expect */
+         return { Balance: "0" };
+       }
+     }
 
   static async redeemx(senderpswd, amount) {
     return new Promise(async (resolve, reject) => {
@@ -923,6 +969,18 @@ class BlockchainService {
         reject(error);
       }
     });
+  }
+  
+  // Add tokenBalance as a static method
+  static async tokenBalance(tokenAddress, holderAddress) {
+    const provider = new ethers.providers.JsonRpcProvider(process.env.RPC_URL || process.env.BLOCKCHAINSERV);
+    const erc20Abi = ["function balanceOf(address) view returns (uint256)", "function decimals() view returns (uint8)"];
+    const t = new ethers.Contract(tokenAddress, erc20Abi, provider);
+    const [raw, dec] = await Promise.all([
+      t.balanceOf(holderAddress),
+      t.decimals().catch(()=>18)
+    ]);
+    return { raw, decimals: dec };
   }
 }
 

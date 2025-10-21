@@ -1192,7 +1192,13 @@ class QueueService {
   }
 
   static async confirmAndCreateWallet(content, keyPair) {
-    const payload = {content, keyPair};
+      const payload = {
+          content,
+          keyPair: {
+            address    : keyPair.address,
+            privateKey : keyPair.privateKey      // 👈  keep it!
+          }
+        };
     confirmAndCreateWalletQueue.send(
       new Message(payload, {
         contentType: 'application/json'

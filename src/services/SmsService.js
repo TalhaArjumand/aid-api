@@ -22,6 +22,12 @@ class SmsService {
   }
 
   async send(to, sms, channel = 'generic') {
+
+    // ⛔ Prevent real network calls in development
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[DEV MODE] Mock SMS → to: ${to}, msg: ${sms}`);
+    return Promise.resolve({ mocked: true });
+  }
     const data = this._loadData({to, sms, channel});
     return new Promise(async (resolve, reject) => {
       try {
