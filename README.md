@@ -3,7 +3,7 @@
 </a>
 
 
-# Convexity Humanitarian Aid Transfer Solution (CHATS)
+# AIDCHAIN Solution
 
 CHATS(Convexity Humanitarian Aid Transfer Solution), enables the transparent transfer of cash and voucher assistance to the beneficiaries while leveraging the blockchain technology for livelihood programs and logistics management for aid distribution.
 ##  Technology Stack
