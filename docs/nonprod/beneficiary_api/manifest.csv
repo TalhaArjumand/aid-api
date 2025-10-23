@@ -51,3 +51,4 @@ date,focus,case_file,note_file
 2025-10-20,"API controllers/routes for current flow",tests/nonprod/beneficiary_api/cases/2025-10-20.json,docs/nonprod/beneficiary_api/daily/2025-10-20.md
 2025-10-21,"API services + middleware validation/auth",tests/nonprod/beneficiary_api/cases/2025-10-21.json,docs/nonprod/beneficiary_api/daily/2025-10-21.md
 2025-10-22,"API repository/models/migrations and query fixes",tests/nonprod/beneficiary_api/cases/2025-10-22.json,docs/nonprod/beneficiary_api/daily/2025-10-22.md
+2025-10-23,"API consumers/queues/events integration",tests/nonprod/beneficiary_api/cases/2025-10-23.json,docs/nonprod/beneficiary_api/daily/2025-10-23.md
