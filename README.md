@@ -1,75 +1,237 @@
-<a href="https://withconvexity.com">
-    <img width="200" src="./chats_logo.svg?width=64" alt="CHATS Logo" />
-</a>
 
 
-# AIDCHAIN Solution
 
-CHATS(Convexity Humanitarian Aid Transfer Solution), enables the transparent transfer of cash and voucher assistance to the beneficiaries while leveraging the blockchain technology for livelihood programs and logistics management for aid distribution.
-##  Technology Stack
-    -NodeJS (preferably ^14.10)
-    -PostgresSQL Database
-    -Redis
-    -RabbitMq
-    -Linux (Deb Distribution)
-##  Installation
-    -Install NodeJS
-    -Install PostgresSQL
-    -Install Redis Server
-    -Install RabbitMQ Server
-    -Fork The Code
-    -Change into forked directory
-    -run `npm i` to install dependencies
-    -run `npm i g sequelize-cli` to install sequelize-cli dependencies to install it globally
-    -run `cp .env.example .env` This copies the example ENV in the directory to a new .env file.
-    -run `sequelize-cli db:create` to create a new db on the postgres database, (it is assumed that you have    set the db credentials in the .env file)
-    -run `sequelize-cli db:migrate` to create all necessary tables in the database
-    -This is an optional step run `sequelize-cli db:seed:all` to populate the table with data
+# 💫 AidChain Backend (CHATS API)
 
-    -run `npm start` (This starts the app in production mode)
-    -run `npm run dev` (This starts the app in development mode with nodemon)
-    -run `npm run start:consumer` (This starts the app queue consumer in production mode)
-    -run `npm run start:consumer:dev` (This start the app queue consumer in development mode)
+A **Node.js-based backend system** powering the AidChain ecosystem — a decentralized humanitarian aid transfer solution built on blockchain technology (Hyperledger Besu).  
+This service connects the off-chain world (NGOs, Vendors, Beneficiaries) to the blockchain network through APIs, message queues, and a PostgreSQL database.
 
-##  Run With Docker Compose
-    -Install Docker
-    -Install Docker Compose
-    -run `docker volume create postgres` (This creates docker volume for PostgresSQL Database)
-    -run `docker-compose up --build` to build and start all services
+---
+
+## 🧱 Core Purpose
+
+AidChain enables **transparent, tamper-proof, and automated fund distribution** between:
+- NGOs & Campaigns  
+- Beneficiaries & Vendors  
+- Admins & Field Agents  
+
+It ensures traceability of every aid disbursement through blockchain-backed smart contracts.
+
+---
+
+## 🏗️ System Architecture
+
+┌────────────────────────────┐
+│  Admin / NGO Frontend      │
+│  (Nuxt 3 Web App)          │
+└────────────┬───────────────┘
+│ REST API
+┌────────────▼───────────────┐
+│  AidChain Backend (This)   │
+│  Node.js + Express + Sequelize │
+│  PostgreSQL + RabbitMQ + BlockchainService │
+└────────────┬───────────────┘
+│ Queue Messages
+┌────────────▼───────────────┐
+│  AidChain Blockchain       │
+│  (Hyperledger Besu + QBFT) │
+│  Smart Contracts via ethers.js │
+└────────────────────────────┘
+
+---
+
+## ⚙️ Tech Stack
+
+| Component | Description |
+|------------|-------------|
+| **Node.js + Express** | Backend RESTful API framework |
+| **Sequelize ORM** | Database modeling and migrations |
+| **PostgreSQL** | Relational database for persistent data |
+| **RabbitMQ** | Asynchronous message queue for blockchain transactions |
+| **BlockchainService (ethers.js)** | Connects to AidChain Besu blockchain |
+| **Docker Compose** | Multi-container orchestration |
+| **JWT + Bcrypt** | Secure authentication & authorization |
+
+---
+
+## 🧩 Major Modules
+
+| Module | Description |
+|--------|-------------|
+| **AuthController.js** | Handles login, signup, and JWT token generation |
+| **OrganisationController.js** | Manages NGOs, campaigns, and members |
+| **CampaignController.js** | Adds beneficiaries, disburses tokens |
+| **BlockchainService.js** | Interacts with Besu blockchain using ethers.js |
+| **QueueService.js** | Publishes tasks to RabbitMQ (e.g., mint, approve, fund) |
+| **TransactionConsumer.js** | Consumes blockchain-related jobs asynchronously |
+| **WalletService.js** | Creates and manages wallets for users, NGOs, and campaigns |
+
+---
+
+## 🪄 Key RabbitMQ Queues
+
+| Queue Name | Purpose |
+|-------------|----------|
+| `approveOneBeneficiary` | Approve blockchain spending for a beneficiary |
+| `FUND_BENEFICIARY` | Disburse AidTokens to beneficiary wallets |
+| `mintNFTFunc` | Mint NFTs for verified transactions |
+| `FundVendor` | Handle vendor order funding |
+| `ConfirmTransaction` | Confirm pending blockchain transactions |
+| `GasIncreaseQueue` | Retry transactions stuck due to low gas |
+
+---
+
+## 🗃️ Database Schema Overview
+
+Key tables created via Sequelize migrations:
+- **Users** (role-based: NGO, Vendor, Beneficiary, Admin)  
+- **Organisations** (NGOs registered in the system)  
+- **Campaigns** (aid distribution programs)  
+- **Wallets** (unique addresses mapped to blockchain wallets)  
+- **Transactions** (blockchain operations logged locally)  
+- **OrganisationMembers**, **Vendors**, **Beneficiaries**
+
+---
+
+## 📦 Installation Guide
+
+### 🧰 Prerequisites
+Ensure you have installed:
+```bash
+Node.js >= 14
+PostgreSQL
+RabbitMQ
+Docker (optional)
+Redis (for caching, optional)
 
 
-## Contribution Guide
-**Create a New Branch:**
-Create a new branch on your local machine.
+⸻
 
-**Make Changes:**
-Implement your desired changes or additions to the codebase.
-Ensure that your code follows the project's coding conventions and style guidelines.
+🧑‍💻 Local Setup
 
-**Test Your Changes:**
-Before submitting your contribution, make sure to test your changes thoroughly.
+# Clone repository
+git clone https://github.com/TalhaArjumand/chats-api.git
+cd chats-api
 
-**Commit and Push:**
-Commit your changes with clear and descriptive commit messages.
-Push your commits to the branch you created on your forked repository.
+# Install dependencies
+npm install
 
-**Create a Merge Request (MR):**
-Go to the original repository and locate the "Merge Requests" section.
-Click on "New merge request" to create a new merge request from your branch to the original repository's main branch.
-Provide a descriptive title and detailed description of your changes in the merge request.
+# Configure environment
+cp .env.example .env
 
-## License
-Copyright (C) 2023  Convexity CVA Inc.
+# Create database
+npx sequelize-cli db:create
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as
-published by the Free Software Foundation, either version 3 of the
-License, or (at your option) any later version.
+# Run migrations
+npx sequelize-cli db:migrate
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Affero General Public License for more details.
+# (Optional) Seed data
+npx sequelize-cli db:seed:all
 
-You should have received a copy of the GNU Affero General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+⸻
+
+🧱 Run Application
+
+Development Mode:
+
+npm run dev
+
+Production Mode:
+
+npm start
+
+Start Consumers:
+
+npm run start:consumer
+
+Development Consumers:
+
+npm run start:consumer:dev
+
+
+⸻
+
+🐳 Run with Docker Compose
+
+# Build and start all services
+docker-compose up --build
+
+# Create persistent volume for PostgreSQL
+docker volume create postgres
+
+
+⸻
+
+⚙️ Environment Variables
+
+Below is an example .env configuration:
+
+PORT=3000
+NODE_ENV=development
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=yourpassword
+DB_NAME=aidchain
+RABBITMQ_URL=amqp://localhost
+BLOCKCHAIN_RPC=http://127.0.0.1:8545
+PRIVATE_KEY=0x<private-key>
+TOKEN_CONTRACT=0x<token-address>
+OPS_CONTRACT=0x<ops-address>
+ESCROW_CONTRACT=0x<escrow-address>
+JWT_SECRET=supersecretkey
+
+
+⸻
+
+🔐 Authentication Flow
+	•	Admins and NGOs authenticate using JWT tokens.
+	•	Each user’s wallet is linked via the Wallets table.
+	•	API routes use middleware for authentication & role validation.
+
+⸻
+
+🧩 Example API Endpoints
+
+Endpoint	Description	Method
+/v1/auth/login	User login	POST
+/v1/organisations	Create NGO organisation	POST
+/v1/campaigns	Create a campaign	POST
+/v1/campaigns/:id/beneficiaries	Add beneficiary to campaign	POST
+/v1/utils/test-blockchain	Test blockchain connection	GET
+
+
+⸻
+
+🔁 Developer Workflow
+
+# Create new branch
+git checkout -b feature/<branch-name>
+
+# Push changes
+git add .
+git commit -m "Implement feature X"
+git push origin feature/<branch-name>
+
+Follow Git flow for merging into FYP or main.
+
+⸻
+
+📬 Contribution Guidelines
+	•	Avoid pushing .env or private keys.
+	•	Always test consumer scripts before pushing.
+	•	Maintain clean, well-documented commits.
+	•	Follow existing linting and formatting rules.
+
+⸻
+
+🧠 Credits
+
+Developed by Team AidChain
+Mentored under the FAST-NUCES Blockchain Systems Lab
+
+
+“Blockchain is not the goal — transparency is.”
+— AidChain Engineering Team
+
