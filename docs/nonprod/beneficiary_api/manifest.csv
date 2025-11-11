@@ -70,3 +70,4 @@ date,focus,case_file,note_file
 2025-11-08,"API refactor/performance/security hardening",tests/nonprod/beneficiary_api/cases/2025-11-08.json,docs/nonprod/beneficiary_api/daily/2025-11-08.md
 2025-11-09,"API docs/config/chore and release notes",tests/nonprod/beneficiary_api/cases/2025-11-09.json,docs/nonprod/beneficiary_api/daily/2025-11-09.md
 2025-11-10,"API controllers/routes for current flow",tests/nonprod/beneficiary_api/cases/2025-11-10.json,docs/nonprod/beneficiary_api/daily/2025-11-10.md
+2025-11-11,"API services + middleware validation/auth",tests/nonprod/beneficiary_api/cases/2025-11-11.json,docs/nonprod/beneficiary_api/daily/2025-11-11.md
