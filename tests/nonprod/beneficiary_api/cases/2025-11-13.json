@@ -1,0 +1,11 @@
+{
+  "date": "2025-11-13",
+  "pair": "beneficiary+api",
+  "focus": "API consumers/queues/events integration",
+  "repo": "aid-api",
+  "checks": [
+    "daily fixture exists and parses",
+    "manifest row is appended once",
+    "non-production files only"
+  ]
+}
