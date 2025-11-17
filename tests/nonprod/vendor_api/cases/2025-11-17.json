@@ -1,0 +1,11 @@
+{
+  "date": "2025-11-17",
+  "pair": "vendor+api",
+  "focus": "API controllers/routes for current flow",
+  "repo": "aid-api",
+  "verification": [
+    "fixture schema check",
+    "manifest single-entry check",
+    "non-production-only diff check"
+  ]
+}
