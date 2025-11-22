@@ -5,3 +5,4 @@ date,focus,case_file,note_file
 2025-11-19,"API repository/models/migrations and query fixes",tests/nonprod/vendor_api/cases/2025-11-19.json,docs/nonprod/vendor_api/daily/2025-11-19.md
 2025-11-20,"API consumers/queues/events integration",tests/nonprod/vendor_api/cases/2025-11-20.json,docs/nonprod/vendor_api/daily/2025-11-20.md
 2025-11-21,"API tests (unit/integration) + bug fixes",tests/nonprod/vendor_api/cases/2025-11-21.json,docs/nonprod/vendor_api/daily/2025-11-21.md
+2025-11-22,"API refactor/performance/security hardening",tests/nonprod/vendor_api/cases/2025-11-22.json,docs/nonprod/vendor_api/daily/2025-11-22.md
