@@ -9,3 +9,4 @@ date,focus,case_file,note_file
 2025-11-23,"API docs/config/chore and release notes",tests/nonprod/vendor_api/cases/2025-11-23.json,docs/nonprod/vendor_api/daily/2025-11-23.md
 2025-11-24,"API controllers/routes for current flow",tests/nonprod/vendor_api/cases/2025-11-24.json,docs/nonprod/vendor_api/daily/2025-11-24.md
 2025-11-25,"API services + middleware validation/auth",tests/nonprod/vendor_api/cases/2025-11-25.json,docs/nonprod/vendor_api/daily/2025-11-25.md
+2025-11-26,"API repository/models/migrations and query fixes",tests/nonprod/vendor_api/cases/2025-11-26.json,docs/nonprod/vendor_api/daily/2025-11-26.md
