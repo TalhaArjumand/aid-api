@@ -1,0 +1,11 @@
+{
+  "date": "2025-11-28",
+  "pair": "vendor+api",
+  "focus": "API tests (unit/integration) + bug fixes",
+  "repo": "aid-api",
+  "verification": [
+    "fixture schema check",
+    "manifest single-entry check",
+    "non-production-only diff check"
+  ]
+}
