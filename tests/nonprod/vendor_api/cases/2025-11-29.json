@@ -1,0 +1,11 @@
+{
+  "date": "2025-11-29",
+  "pair": "vendor+api",
+  "focus": "API refactor/performance/security hardening",
+  "repo": "aid-api",
+  "verification": [
+    "fixture schema check",
+    "manifest single-entry check",
+    "non-production-only diff check"
+  ]
+}
