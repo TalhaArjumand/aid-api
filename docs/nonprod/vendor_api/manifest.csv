@@ -25,3 +25,4 @@ date,focus,case_file,note_file
 2025-12-09,"API services + middleware validation/auth",tests/nonprod/vendor_api/cases/2025-12-09.json,docs/nonprod/vendor_api/daily/2025-12-09.md
 2025-12-10,"API repository/models/migrations and query fixes",tests/nonprod/vendor_api/cases/2025-12-10.json,docs/nonprod/vendor_api/daily/2025-12-10.md
 2025-12-11,"API consumers/queues/events integration",tests/nonprod/vendor_api/cases/2025-12-11.json,docs/nonprod/vendor_api/daily/2025-12-11.md
+2025-12-12,"API tests (unit/integration) + bug fixes",tests/nonprod/vendor_api/cases/2025-12-12.json,docs/nonprod/vendor_api/daily/2025-12-12.md
