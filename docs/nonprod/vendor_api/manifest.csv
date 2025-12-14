@@ -27,3 +27,4 @@ date,focus,case_file,note_file
 2025-12-11,"API consumers/queues/events integration",tests/nonprod/vendor_api/cases/2025-12-11.json,docs/nonprod/vendor_api/daily/2025-12-11.md
 2025-12-12,"API tests (unit/integration) + bug fixes",tests/nonprod/vendor_api/cases/2025-12-12.json,docs/nonprod/vendor_api/daily/2025-12-12.md
 2025-12-13,"API refactor/performance/security hardening",tests/nonprod/vendor_api/cases/2025-12-13.json,docs/nonprod/vendor_api/daily/2025-12-13.md
+2025-12-14,"API docs/config/chore and release notes",tests/nonprod/vendor_api/cases/2025-12-14.json,docs/nonprod/vendor_api/daily/2025-12-14.md
