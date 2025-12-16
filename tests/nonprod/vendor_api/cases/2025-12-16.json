@@ -1,0 +1,11 @@
+{
+  "date": "2025-12-16",
+  "pair": "vendor+api",
+  "focus": "API services + middleware validation/auth",
+  "repo": "aid-api",
+  "verification": [
+    "fixture schema check",
+    "manifest single-entry check",
+    "non-production-only diff check"
+  ]
+}
