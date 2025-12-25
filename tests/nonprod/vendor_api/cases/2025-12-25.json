@@ -1,0 +1,11 @@
+{
+  "date": "2025-12-25",
+  "pair": "vendor+api",
+  "focus": "API consumers/queues/events integration",
+  "repo": "aid-api",
+  "verification": [
+    "fixture schema check",
+    "manifest single-entry check",
+    "non-production-only diff check"
+  ]
+}
