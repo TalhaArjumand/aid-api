@@ -1,0 +1,11 @@
+{
+  "date": "2026-01-04",
+  "pair": "vendor+api",
+  "focus": "API docs/config/chore and release notes",
+  "repo": "aid-api",
+  "verification": [
+    "fixture schema check",
+    "manifest single-entry check",
+    "non-production-only diff check"
+  ]
+}
