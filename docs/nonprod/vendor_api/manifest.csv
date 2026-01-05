@@ -49,3 +49,4 @@ date,focus,case_file,note_file
 2026-01-02,"API tests (unit/integration) + bug fixes",tests/nonprod/vendor_api/cases/2026-01-02.json,docs/nonprod/vendor_api/daily/2026-01-02.md
 2026-01-03,"API refactor/performance/security hardening",tests/nonprod/vendor_api/cases/2026-01-03.json,docs/nonprod/vendor_api/daily/2026-01-03.md
 2026-01-04,"API docs/config/chore and release notes",tests/nonprod/vendor_api/cases/2026-01-04.json,docs/nonprod/vendor_api/daily/2026-01-04.md
+2026-01-05,"API controllers/routes for current flow",tests/nonprod/vendor_api/cases/2026-01-05.json,docs/nonprod/vendor_api/daily/2026-01-05.md
