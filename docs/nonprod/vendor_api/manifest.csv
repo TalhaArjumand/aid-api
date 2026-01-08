@@ -52,3 +52,4 @@ date,focus,case_file,note_file
 2026-01-05,"API controllers/routes for current flow",tests/nonprod/vendor_api/cases/2026-01-05.json,docs/nonprod/vendor_api/daily/2026-01-05.md
 2026-01-06,"API services + middleware validation/auth",tests/nonprod/vendor_api/cases/2026-01-06.json,docs/nonprod/vendor_api/daily/2026-01-06.md
 2026-01-07,"API repository/models/migrations and query fixes",tests/nonprod/vendor_api/cases/2026-01-07.json,docs/nonprod/vendor_api/daily/2026-01-07.md
+2026-01-08,"API consumers/queues/events integration",tests/nonprod/vendor_api/cases/2026-01-08.json,docs/nonprod/vendor_api/daily/2026-01-08.md
