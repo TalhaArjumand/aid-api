@@ -54,3 +54,4 @@ date,focus,case_file,note_file
 2026-01-07,"API repository/models/migrations and query fixes",tests/nonprod/vendor_api/cases/2026-01-07.json,docs/nonprod/vendor_api/daily/2026-01-07.md
 2026-01-08,"API consumers/queues/events integration",tests/nonprod/vendor_api/cases/2026-01-08.json,docs/nonprod/vendor_api/daily/2026-01-08.md
 2026-01-09,"API tests (unit/integration) + bug fixes",tests/nonprod/vendor_api/cases/2026-01-09.json,docs/nonprod/vendor_api/daily/2026-01-09.md
+2026-01-10,"API refactor/performance/security hardening",tests/nonprod/vendor_api/cases/2026-01-10.json,docs/nonprod/vendor_api/daily/2026-01-10.md
