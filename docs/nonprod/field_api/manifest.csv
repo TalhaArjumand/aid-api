@@ -7,3 +7,4 @@ date,focus,case_file,note_file
 2026-01-16,"API tests (unit/integration) + bug fixes",tests/nonprod/field_api/cases/2026-01-16.json,docs/nonprod/field_api/daily/2026-01-16.md
 2026-01-17,"API refactor/performance/security hardening",tests/nonprod/field_api/cases/2026-01-17.json,docs/nonprod/field_api/daily/2026-01-17.md
 2026-01-18,"API docs/config/chore and release notes",tests/nonprod/field_api/cases/2026-01-18.json,docs/nonprod/field_api/daily/2026-01-18.md
+2026-01-19,"API controllers/routes for current flow",tests/nonprod/field_api/cases/2026-01-19.json,docs/nonprod/field_api/daily/2026-01-19.md
