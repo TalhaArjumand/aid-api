@@ -1,0 +1,11 @@
+{
+  "date": "2026-01-24",
+  "pair": "field+api",
+  "focus": "API refactor/performance/security hardening",
+  "repo": "aid-api",
+  "controls": [
+    "fixture parser validation",
+    "manifest append validation",
+    "runtime code exclusion check"
+  ]
+}
