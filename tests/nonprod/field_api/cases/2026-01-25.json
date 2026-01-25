@@ -1,0 +1,11 @@
+{
+  "date": "2026-01-25",
+  "pair": "field+api",
+  "focus": "API docs/config/chore and release notes",
+  "repo": "aid-api",
+  "controls": [
+    "fixture parser validation",
+    "manifest append validation",
+    "runtime code exclusion check"
+  ]
+}
