@@ -1,0 +1,11 @@
+{
+  "date": "2026-01-30",
+  "pair": "field+api",
+  "focus": "API tests (unit/integration) + bug fixes",
+  "repo": "aid-api",
+  "controls": [
+    "fixture parser validation",
+    "manifest append validation",
+    "runtime code exclusion check"
+  ]
+}
