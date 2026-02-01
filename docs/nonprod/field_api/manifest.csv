@@ -20,3 +20,4 @@ date,focus,case_file,note_file
 2026-01-29,"API consumers/queues/events integration",tests/nonprod/field_api/cases/2026-01-29.json,docs/nonprod/field_api/daily/2026-01-29.md
 2026-01-30,"API tests (unit/integration) + bug fixes",tests/nonprod/field_api/cases/2026-01-30.json,docs/nonprod/field_api/daily/2026-01-30.md
 2026-01-31,"API refactor/performance/security hardening",tests/nonprod/field_api/cases/2026-01-31.json,docs/nonprod/field_api/daily/2026-01-31.md
+2026-02-01,"API docs/config/chore and release notes",tests/nonprod/field_api/cases/2026-02-01.json,docs/nonprod/field_api/daily/2026-02-01.md
