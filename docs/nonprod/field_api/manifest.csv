@@ -25,3 +25,4 @@ date,focus,case_file,note_file
 2026-02-03,"API services + middleware validation/auth",tests/nonprod/field_api/cases/2026-02-03.json,docs/nonprod/field_api/daily/2026-02-03.md
 2026-02-04,"API repository/models/migrations and query fixes",tests/nonprod/field_api/cases/2026-02-04.json,docs/nonprod/field_api/daily/2026-02-04.md
 2026-02-05,"API consumers/queues/events integration",tests/nonprod/field_api/cases/2026-02-05.json,docs/nonprod/field_api/daily/2026-02-05.md
+2026-02-06,"API tests (unit/integration) + bug fixes",tests/nonprod/field_api/cases/2026-02-06.json,docs/nonprod/field_api/daily/2026-02-06.md
